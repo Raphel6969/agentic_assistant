@@ -11,7 +11,7 @@ import { SettingsModal } from "@/components/modals/SettingsModal";
 import { EventDetailPanel } from "@/components/trace/EventDetailPanel";
 import { ShimmerButton } from "@/components/magicui/ShimmerButton";
 import { NumberTicker } from "@/components/magicui/NumberTicker";
-import { GeneralChatBot } from "@/components/workbench/GeneralChatBot";
+import { GeneralChatBot, type ChatMessage } from "@/components/workbench/GeneralChatBot";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavTab = "dashboard" | "tasks" | "chat" | "tools" | "config";
@@ -24,6 +24,8 @@ export interface LocalTaskItem {
   budget: number;
   created_at: string;
   task_id?: string;
+  taskObj?: Task;
+  events?: TraceEvent[];
 }
 
 // ── Header Navigation TabBar ───────────────────────────────────────────────────
@@ -80,8 +82,6 @@ function DedicatedTasksPanel({
   selectedTask,
   onSelectTask,
   onAddTaskClick,
-  currentTask,
-  events,
   onOpenACPBankModal,
   onSelectEvent,
   selectedEventId,
@@ -90,8 +90,6 @@ function DedicatedTasksPanel({
   selectedTask: LocalTaskItem | null;
   onSelectTask: (t: LocalTaskItem) => void;
   onAddTaskClick: () => void;
-  currentTask: Task | null;
-  events: TraceEvent[];
   onOpenACPBankModal: (title: string, amount: number) => void;
   onSelectEvent: (event: TraceEvent) => void;
   selectedEventId?: string;
@@ -204,7 +202,7 @@ function DedicatedTasksPanel({
         </div>
       </div>
 
-      {/* Right Column: Task Output & Execution Chat (Includes Flight Tickets, Code Snippets, Trace events!) */}
+      {/* Right Column: Task Output & Execution Chat (Per-task execution output!) */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#FFFFFF", overflowY: "auto" }}>
         {selectedTask ? (
           <div style={{ padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
@@ -219,33 +217,24 @@ function DedicatedTasksPanel({
               </p>
             </div>
 
-            {/* Live Assistant Message Card with Flight Tickets, Code Output & Trace Events */}
-            {currentTask ? (
-              <AssistantMessageCard
-                task={currentTask}
-                events={events}
-                onOpenACPBankModal={onOpenACPBankModal}
-                onSelectEvent={onSelectEvent}
-                selectedEventId={selectedEventId}
-              />
-            ) : (
-              <div
-                style={{
-                  background: "#F8FAFC",
-                  border: "1px dashed #CBD5E1",
-                  borderRadius: 20,
-                  padding: 36,
-                  textAlign: "center",
-                  color: "#64748B",
-                }}
-              >
-                <span style={{ fontSize: 32, display: "block", marginBottom: 12 }}>🚀</span>
-                <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Task Initiated: {selectedTask.title}</h4>
-                <p style={{ margin: "8px 0 0", fontSize: 13 }}>
-                  Maestro AI agents are executing sub-task steps for this task. Results will appear right here!
-                </p>
-              </div>
-            )}
+            {/* Render per-task AssistantMessageCard explicitly bound to selectedTask */}
+            <AssistantMessageCard
+              task={
+                selectedTask.taskObj || {
+                  task_id: selectedTask.id,
+                  status: "running",
+                  domain: selectedTask.domain,
+                  description: selectedTask.title,
+                  budget_ceiling: selectedTask.budget,
+                  budget_spent: 0,
+                  created_at: selectedTask.created_at,
+                }
+              }
+              events={selectedTask.events || []}
+              onOpenACPBankModal={onOpenACPBankModal}
+              onSelectEvent={onSelectEvent}
+              selectedEventId={selectedEventId}
+            />
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748B", gap: 12 }}>
@@ -474,6 +463,7 @@ export default function MaestroWorkbench() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState<LocalTaskItem | null>(null);
   const [tasks, setTasks] = useState<LocalTaskItem[]>([]);
+  const [persistentChatMessages, setPersistentChatMessages] = useState<ChatMessage[]>([]);
   const [acpModalState, setAcpModalState] = useState<{ isOpen: boolean; title: string; amount: number }>({
     isOpen: false,
     title: "",
@@ -483,6 +473,34 @@ export default function MaestroWorkbench() {
   const { currentTask, events, selectedEvent, setSelectedEvent, startTask } = useTraceStream();
 
   const userName = user?.name || "Marco";
+
+  // Sync currentTask and events into selectedTask's local item object
+  useEffect(() => {
+    if (currentTask && selectedTask) {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === selectedTask.id
+            ? {
+                ...t,
+                task_id: currentTask.task_id,
+                taskObj: currentTask,
+                events: events,
+              }
+            : t
+        )
+      );
+      setSelectedTask((prev) =>
+        prev
+          ? {
+              ...prev,
+              task_id: currentTask.task_id,
+              taskObj: currentTask,
+              events: events,
+            }
+          : null
+      );
+    }
+  }, [currentTask, events]);
 
   // Start task handler
   const handleStartTask = useCallback(
@@ -936,8 +954,6 @@ export default function MaestroWorkbench() {
             selectedTask={selectedTask}
             onSelectTask={setSelectedTask}
             onAddTaskClick={() => setShowAddTask(true)}
-            currentTask={currentTask}
-            events={events}
             onOpenACPBankModal={(title, amount) => setAcpModalState({ isOpen: true, title, amount })}
             onSelectEvent={setSelectedEvent}
             selectedEventId={selectedEvent?.event_id}
@@ -954,6 +970,8 @@ export default function MaestroWorkbench() {
               Ask general questions, check current date/time, request coding advice, or give Maestro tasks to execute.
             </p>
             <GeneralChatBot
+              messages={persistentChatMessages}
+              onUpdateMessages={setPersistentChatMessages}
               onStartTask={(desc, dom, bdg) => {
                 const newTask: LocalTaskItem = {
                   id: crypto.randomUUID(),

@@ -3,34 +3,52 @@
 import React, { useState } from "react";
 import type { Domain } from "@/lib/types";
 
-interface GeneralChatBotProps {
-  onStartTask: (description: string, domain: Domain, budget: number) => void;
-}
-
-interface ChatMessage {
+export interface ChatMessage {
   role: "user" | "ai";
   text: string;
   time: string;
 }
 
-export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ onStartTask }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+interface GeneralChatBotProps {
+  onStartTask: (description: string, domain: Domain, budget: number) => void;
+  messages?: ChatMessage[];
+  onUpdateMessages?: (msgs: ChatMessage[]) => void;
+}
+
+export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
+  onStartTask,
+  messages: externalMessages,
+  onUpdateMessages,
+}) => {
+  const defaultInitial: ChatMessage[] = [
     {
       role: "ai",
       text: "Hello! I'm Maestro General AI. Ask me anything — general questions, coding advice, dates, info, or ask me to plan a task!",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
-  ]);
+  ];
+
+  const [internalMessages, setInternalMessages] = useState<ChatMessage[]>(defaultInitial);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+
+  const messages = externalMessages && externalMessages.length > 0 ? externalMessages : internalMessages;
+
+  const updateList = (newList: ChatMessage[]) => {
+    setInternalMessages(newList);
+    if (onUpdateMessages) {
+      onUpdateMessages(newList);
+    }
+  };
 
   const processQuery = (rawInput: string) => {
     const text = rawInput.trim();
     if (!text) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const newMsg: ChatMessage = { role: "user", text, time: timeStr };
-    setMessages((prev) => [...prev, newMsg]);
+    const userMsg: ChatMessage = { role: "user", text, time: timeStr };
+    const nextList = [...messages, userMsg];
+    updateList(nextList);
     setInput("");
     setIsThinking(true);
 
@@ -86,16 +104,19 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ onStartTask }) =
         replyText = `I understand you're asking about "${text}". As your Maestro AI assistant, I can answer general queries or run autonomous background agentic tasks for you anytime!`;
       }
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "ai", text: replyText, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
-      ]);
+      const aiMsg: ChatMessage = {
+        role: "ai",
+        text: replyText,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+
+      updateList([...nextList, aiMsg]);
       setIsThinking(false);
 
       if (isTaskTrigger) {
         onStartTask(text, targetDomain, taskBudget);
       }
-    }, 500);
+    }, 450);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -114,7 +135,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ onStartTask }) =
         boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
         display: "flex",
         flexDirection: "column",
-        height: 480,
+        height: 520,
         overflow: "hidden",
       }}
     >
@@ -146,7 +167,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({ onStartTask }) =
         </div>
         <div>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>Maestro General AI Chatbot</h3>
-          <span style={{ fontSize: 11, color: "#94A3B8" }}>Answers general questions, dates & runs agentic tasks</span>
+          <span style={{ fontSize: 11, color: "#94A3B8" }}>Persistent session chat — answers questions, date & runs tasks</span>
         </div>
       </div>
 
