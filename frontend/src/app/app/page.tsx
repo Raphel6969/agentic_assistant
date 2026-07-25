@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import type { Domain, Task } from "@/lib/types";
+import type { Domain } from "@/lib/types";
 import { useTraceStream } from "@/hooks/useTraceStream";
 import { VoiceWidget } from "@/components/workbench/VoiceWidget";
 import { QuickRequests } from "@/components/workbench/QuickRequests";
@@ -47,14 +47,15 @@ export default function MaestroWorkbench() {
       style={{
         minHeight: "100vh",
         background: "linear-gradient(180deg, #D4E7FE 0%, #EBF4FF 50%, #DBEAFE 100%)",
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: "#1E293B",
         display: "flex",
         flexDirection: "column",
         padding: 16,
+        overflowY: "auto",
       }}
     >
-      {/* Container Frame Inspired by Inspiration Image */}
+      {/* Outer Container Frame */}
       <div
         style={{
           maxWidth: 1440,
@@ -68,23 +69,30 @@ export default function MaestroWorkbench() {
           boxShadow: "0 20px 60px rgba(0,0,0,0.06)",
           display: "flex",
           flexDirection: "column",
-          minHeight: "calc(100vh - 32px)",
-          overflow: "hidden",
+          minHeight: "100%",
+          position: "relative",
         }}
       >
-        {/* Header Bar */}
+        {/* Sticky Top Header Bar */}
         <header
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "20px 36px",
-            borderBottom: "1px solid rgba(255,255,255,0.6)",
+            padding: "18px 36px",
+            borderBottom: "1px solid rgba(255,255,255,0.8)",
+            background: "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            borderRadius: "32px 32px 0 0",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 24 }}>✳</span>
-            <span style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: "#0F172A" }}>
+            <span style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 24, fontWeight: 700, color: "#0F172A" }}>
               maestro
             </span>
           </div>
@@ -155,7 +163,7 @@ export default function MaestroWorkbench() {
         </header>
 
         {/* Sub-Header: Serif Greeting & Today's Tasks */}
-        <div style={{ padding: "20px 36px 10px 36px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ padding: "24px 36px 12px 36px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <img
               src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`}
@@ -164,18 +172,19 @@ export default function MaestroWorkbench() {
             />
             <h1
               style={{
-                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontFamily: "var(--font-serif), Georgia, serif",
                 fontSize: 36,
                 fontWeight: 400,
                 color: "#0F172A",
                 letterSpacing: "-0.02em",
+                margin: 0,
               }}
             >
               Hi, {userName}!
             </h1>
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>Today's Tasks</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>Today's Tasks</h2>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#64748B" }}>
             <span>Team:</span>
@@ -188,7 +197,7 @@ export default function MaestroWorkbench() {
           </div>
         </div>
 
-        {/* 3-Column Layout (Matching Inspiration Image) */}
+        {/* 3-Column Layout (Fully Scrollable) */}
         <div
           style={{
             display: "grid",
@@ -242,7 +251,7 @@ export default function MaestroWorkbench() {
             >
               <div
                 style={{
-                  fontFamily: "Georgia, serif",
+                  fontFamily: "var(--font-serif), Georgia, serif",
                   fontSize: 72,
                   fontWeight: 400,
                   color: "#0F172A",
@@ -332,7 +341,7 @@ export default function MaestroWorkbench() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 16 }}>📞</span>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Weekly Strategy Sync</h4>
+                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0 }}>Weekly Strategy Sync</h4>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, background: "#10B981", color: "#fff", padding: "3px 10px", borderRadius: 12 }}>
                   Meeting
@@ -395,7 +404,7 @@ export default function MaestroWorkbench() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 16 }}>📊</span>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Design Review</h4>
+                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0 }}>Design Review</h4>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, background: "#EF4444", color: "#fff", padding: "3px 8px", borderRadius: 10 }}>
