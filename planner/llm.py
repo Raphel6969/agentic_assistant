@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Intent(str, Enum):
     GREETING = "greeting"
+    KNOWLEDGE_QA = "knowledge_qa"
     CODING = "coding"
     TRIP = "trip"
     SCHEDULING = "scheduling"
@@ -29,6 +30,17 @@ def detect_prompt_domain(task_description: str, fallback_domain: str = "general"
     greeting_phrases = ["how are you", "what's up", "good morning", "good afternoon", "good evening", "nice to meet", "whats ur name", "what is your name", "who are you"]
     if text in greeting_exact or any(phrase in text for phrase in greeting_phrases):
         return Intent.GREETING.value
+
+    # General Knowledge / Q&A Check (Informational Queries -> Zero Tool Overhead)
+    qa_prefixes = [
+        "who is", "who was", "who's", "whos", "what is", "what's", "whats", "explain", "tell me about",
+        "why is", "why does", "how does", "how do", "where is", "capital of", "distance to", "definition of",
+        "who won", "history of", "what are",
+    ]
+    # Ensure QA check doesn't steal actionable code/trip/schedule requests
+    is_actionable = any(k in text for k in ["book", "flight", "hotel", "write code", "python script", "schedule meeting", "compare price"])
+    if not is_actionable and any(text.startswith(p) or f" {p} " in text for p in qa_prefixes):
+        return Intent.KNOWLEDGE_QA.value
 
     # Coding / Scripting / Algorithms
     coding_keywords = [

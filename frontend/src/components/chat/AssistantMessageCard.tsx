@@ -24,6 +24,11 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  // Dynamic In-Task Chat Assistant State
+  const [inTaskMessages, setInTaskMessages] = useState<Array<{ role: "user" | "ai"; text: string; time: string }>>([]);
+  const [inTaskInput, setInTaskInput] = useState("");
+  const [activeDate, setActiveDate] = useState("2026-09-15");
+
   // Strict domain detection: coding vs flight vs full_trip
   const textLower = String(task.description || "").toLowerCase();
   const isCodingTask =
@@ -87,6 +92,32 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
     navigator.clipboard.writeText(text);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleInTaskSend = () => {
+    if (!inTaskInput.trim()) return;
+    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const userMsg = { role: "user" as const, text: inTaskInput.trim(), time: timeStr };
+    const nextMsgs = [...inTaskMessages, userMsg];
+    setInTaskMessages(nextMsgs);
+    const query = inTaskInput.toLowerCase().trim();
+    setInTaskInput("");
+
+    setTimeout(() => {
+      let replyText = "";
+      if (query.includes("better") || query.includes("opinion") || query.includes("which") || query.includes("recommend")) {
+        replyText = `Air France (AF224) at $487 is the overall best choice because it offers a direct 8h 45m flight with zero layovers. Lufthansa (LH755) is $47 cheaper ($440), but requires a 2-hour layover in Frankfurt (10h total duration).`;
+      } else if (query.includes("cheapest") || query.includes("cheap") || query.includes("budget")) {
+        replyText = `Lufthansa (LH755) is the cheapest option at $440.00. You save $47.00 compared to Air France.`;
+      } else if (query.includes("date") || query.includes("change") || query.includes("sept") || query.includes("august") || query.includes("october")) {
+        setActiveDate("2026-09-20");
+        replyText = `Updating flight search date to September 20, 2026... Updated flight options rendered above!`;
+      } else {
+        replyText = `I'm analyzing your request regarding "${query}". For this ${task.domain} task, I recommend sticking with our Rust solver's top scored option!`;
+      }
+
+      setInTaskMessages([...nextMsgs, { role: "ai", text: replyText, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+    }, 350);
   };
 
   // Generate Python code snippet
@@ -291,7 +322,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         </div>
       )}
 
-      {/* DYNAMIC CARD 2: Flight Options (Dynamic Origin → Destination Header!) */}
+      {/* DYNAMIC CARD 2: Flight Options (Dynamic Origin → Destination Header & Date!) */}
       {isTripTask && (
         <div
           style={{
@@ -310,7 +341,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 <path d="M22 2L11 13" />
                 <path d="M22 2l-7 20-4-9-9-4 20-7z" />
               </svg>
-              Available Flight Options ({originCode} → {destCode})
+              Available Flight Options ({originCode} → {destCode} · Date: {activeDate})
             </span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "#D1FAE5", padding: "3px 10px", borderRadius: 12 }}>
               Rust Solver Scored ✓
@@ -360,20 +391,6 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 >
                   Book via Linked Bank (ACP)
                 </button>
-                <a
-                  href="https://www.airfrance.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    textAlign: "center",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#6366F1",
-                    textDecoration: "none",
-                  }}
-                >
-                  Book on AirFrance.com ↗
-                </a>
               </div>
             </div>
 
@@ -419,140 +436,87 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 >
                   Book via Linked Bank (ACP)
                 </button>
-                <a
-                  href="https://www.lufthansa.com"
-                  target="_blank"
-                  rel="noreferrer"
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DYNAMIC CARD 3: Interactive In-Task Assistant Chat Thread */}
+      <div
+        style={{
+          background: "#F8FAFC",
+          border: "1.5px solid #E2E8F0",
+          borderRadius: 20,
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#6366F1", textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
+          💬 Interactive Task Chat & Follow-up Assistant
+        </div>
+
+        {/* Thread messages */}
+        {inTaskMessages.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 180, overflowY: "auto" }}>
+            {inTaskMessages.map((m, idx) => (
+              <div key={idx} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+                <div
                   style={{
-                    textAlign: "center",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#10B981",
-                    textDecoration: "none",
+                    background: m.role === "user" ? "#6366F1" : "#FFFFFF",
+                    color: m.role === "user" ? "#FFFFFF" : "#0F172A",
+                    borderRadius: m.role === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
+                    padding: "8px 14px",
+                    fontSize: 12,
+                    border: m.role === "ai" ? "1px solid #E2E8F0" : "none",
                   }}
                 >
-                  Book on Lufthansa.com ↗
-                </a>
+                  {m.text}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
+        )}
+
+        {/* Input Bar */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="text"
+            value={inTaskInput}
+            onChange={(e) => setInTaskInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleInTaskSend()}
+            placeholder="Ask 'Which is better?', 'Why Air France?', or 'Change date to Sept 20'..."
+            style={{
+              flex: 1,
+              border: "1.5px solid #E2E8F0",
+              borderRadius: 20,
+              padding: "8px 14px",
+              fontSize: 12,
+              color: "#0F172A",
+              outline: "none",
+              background: "#FFFFFF",
+            }}
+          />
+          <button
+            onClick={handleInTaskSend}
+            disabled={!inTaskInput.trim()}
+            style={{
+              background: inTaskInput.trim() ? "#6366F1" : "#E2E8F0",
+              color: inTaskInput.trim() ? "#FFFFFF" : "#94A3B8",
+              border: "none",
+              borderRadius: 20,
+              padding: "8px 16px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: inTaskInput.trim() ? "pointer" : "not-allowed",
+            }}
+          >
+            Ask →
+          </button>
         </div>
-      )}
-
-      {/* DYNAMIC CARD 3: Hotel Reservations (ONLY for Full Trip Planner Mock!) */}
-      {isFullTrip && (
-        <div
-          style={{
-            background: "#F8FAFC",
-            border: "1.5px solid #E2E8F0",
-            borderRadius: 20,
-            padding: 20,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3h6v4H9z" />
-              </svg>
-              Recommended Hotel Reservations ({destCode})
-            </span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#8B5CF6", background: "#F3E8FF", padding: "3px 10px", borderRadius: 12 }}>
-              Verified Stays ✓
-            </span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            {/* Grand Hotel */}
-            <div
-              style={{
-                padding: 16,
-                borderRadius: 16,
-                border: "2px solid #8B5CF6",
-                background: "#FFFFFF",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                boxShadow: "0 4px 12px rgba(139,92,246,0.08)",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#8B5CF6", padding: "3px 8px", borderRadius: 6 }}>
-                  LUXURY STAY
-                </span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: "#8B5CF6", fontFamily: "var(--font-mono)" }}>
-                  $180/night
-                </span>
-              </div>
-              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Grand Hotel Central</div>
-              <div style={{ fontSize: 12, color: "#64748B" }}>City Center · 4.8 ★ (Complimentary Breakfast)</div>
-
-              <button
-                onClick={() => onOpenACPBankModal(`Grand Hotel Reservation (${destCode})`, 180.0)}
-                style={{
-                  marginTop: 6,
-                  background: "#8B5CF6",
-                  color: "#FFFFFF",
-                  border: "none",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  cursor: "pointer",
-                  transition: "all 150ms ease",
-                }}
-              >
-                Reserve Hotel Room (ACP)
-              </button>
-            </div>
-
-            {/* Boutique Stay */}
-            <div
-              style={{
-                padding: 16,
-                borderRadius: 16,
-                border: "2px solid #F59E0B",
-                background: "#FFFFFF",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                boxShadow: "0 4px 12px rgba(245,158,11,0.08)",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#F59E0B", padding: "3px 8px", borderRadius: 6 }}>
-                  BEST VALUE
-                </span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: "#F59E0B", fontFamily: "var(--font-mono)" }}>
-                  $140/night
-                </span>
-              </div>
-              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Boutique City Suites</div>
-              <div style={{ fontSize: 12, color: "#64748B" }}>Near Metro · 4.6 ★ (Free Cancellation)</div>
-
-              <button
-                onClick={() => onOpenACPBankModal(`Boutique City Suites (${destCode})`, 140.0)}
-                style={{
-                  marginTop: 6,
-                  background: "#F59E0B",
-                  color: "#FFFFFF",
-                  border: "none",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  cursor: "pointer",
-                  transition: "all 150ms ease",
-                }}
-              >
-                Reserve Hotel Room (ACP)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Collapsible Trace Accordion */}
       <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 12 }}>

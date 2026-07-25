@@ -59,7 +59,7 @@ async def chat(body: dict) -> dict:
 
     domain = detect_prompt_domain(message)
 
-    if domain == Intent.GREETING.value:
+    if domain in (Intent.GREETING.value, Intent.KNOWLEDGE_QA.value):
         reply = await generate_greeting_response(message)
         return {"type": "greeting", "reply": reply}
 
