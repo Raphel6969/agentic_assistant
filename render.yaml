@@ -1,0 +1,75 @@
+# Render Deployment Blueprint for Orcheon (Agentic AI Assistant)
+# https://render.com/docs/blueprint-spec
+
+services:
+  # 1. Next.js 14 Web Frontend
+  - type: web
+    name: orcheon-frontend
+    runtime: docker
+    context: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NEXT_PUBLIC_PLANNER_URL
+        fromService:
+          type: web
+          name: orcheon-planner
+          property: url
+      - key: NEXT_PUBLIC_PLANNER_WS_URL
+        fromService:
+          type: web
+          name: orcheon-planner
+          property: url
+
+  # 2. Python FastAPI Planner & State Machine
+  - type: web
+    name: orcheon-planner
+    runtime: docker
+    context: ./planner
+    dockerfilePath: ./planner/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GATEWAY_URL
+        fromService:
+          type: web
+          name: orcheon-gateway
+          property: url
+      - key: SOLVER_URL
+        fromService:
+          type: web
+          name: orcheon-solver
+          property: url
+
+  # 3. Go MCP Tool Gateway
+  - type: web
+    name: orcheon-gateway
+    runtime: docker
+    context: ./gateway
+    dockerfilePath: ./gateway/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8080
+
+  # 4. Rust Core Policy Engine & Solver
+  - type: web
+    name: orcheon-solver
+    runtime: docker
+    context: ./solver
+    dockerfilePath: ./solver/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8090
