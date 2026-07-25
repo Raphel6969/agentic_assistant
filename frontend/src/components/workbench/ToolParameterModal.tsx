@@ -55,6 +55,40 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
     onClose();
   };
 
+  const renderHeaderIcon = () => {
+    switch (config.toolType) {
+      case "flight":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2L11 13" />
+            <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
+        );
+      case "full_trip":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3h6v4H9z" />
+          </svg>
+        );
+      case "coding":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+        );
+      case "scheduling":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        );
+    }
+  };
+
   return (
     <div
       style={{
@@ -62,7 +96,7 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
         inset: 0,
         zIndex: 450,
         background: "rgba(15, 23, 42, 0.65)",
-        backdropFilter: "blur(8px)",
+        backdropFilter: "blur(12px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -80,6 +114,7 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
           boxShadow: "0 24px 80px rgba(0,0,0,0.2)",
           position: "relative",
           fontFamily: "var(--font-sans), sans-serif",
+          border: "1px solid #E2E8F0",
         }}
       >
         <button
@@ -91,19 +126,24 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
             background: "#F1F5F9",
             border: "none",
             borderRadius: "50%",
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             cursor: "pointer",
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 700,
             color: "#64748B",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           ×
         </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-          <span style={{ fontSize: 28 }}>{config.emoji}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <div style={{ background: "#F8FAFC", padding: 10, borderRadius: 12, border: "1px solid #E2E8F0" }}>
+            {renderHeaderIcon()}
+          </div>
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0 }}>{config.title}</h2>
             <span style={{ fontSize: 12, color: "#64748B" }}>Enter your parameters for dynamic execution</span>
@@ -439,6 +479,7 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
               fontSize: 14,
               fontWeight: 700,
               cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(99,102,241,0.25)",
             }}
           >
             Launch Agentic Task →

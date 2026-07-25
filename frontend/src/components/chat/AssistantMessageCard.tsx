@@ -139,10 +139,11 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         display: "flex",
         flexDirection: "column",
         gap: 18,
-        border: "1px solid rgba(0, 0, 0, 0.08)",
+        border: "1.5px solid #E2E8F0",
         boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
         position: "relative",
         color: "#0F172A",
+        fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* Header & Speaker Icon */}
@@ -150,20 +151,21 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              width: 34,
-              height: 34,
+              width: 36,
+              height: 36,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #6366F1, #3B82F6)",
+              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontWeight: 800,
-              fontSize: 14,
               color: "#FFFFFF",
               boxShadow: "0 2px 8px rgba(99, 102, 241, 0.3)",
             }}
           >
-            A
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+              <path d="M12 6v6l4 2" />
+            </svg>
           </div>
           <div>
             <span style={{ fontWeight: 700, fontSize: 15, color: "#0F172A", display: "inline-block" }}>
@@ -180,9 +182,9 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
           title="Read response out loud"
           style={{
             background: isSpeaking ? "rgba(99, 102, 241, 0.12)" : "#F1F5F9",
-            border: "1px solid " + (isSpeaking ? "#6366F1" : "rgba(0,0,0,0.06)"),
+            border: "1px solid " + (isSpeaking ? "#6366F1" : "#E2E8F0"),
             borderRadius: 16,
-            padding: "6px 12px",
+            padding: "6px 14px",
             color: isSpeaking ? "#6366F1" : "#475569",
             cursor: "pointer",
             fontSize: 12,
@@ -190,9 +192,13 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             display: "flex",
             alignItems: "center",
             gap: 6,
+            transition: "all 150ms ease",
           }}
         >
-          <span>{isSpeaking ? "🔊" : "🔈"}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
           <span>{isSpeaking ? "Speaking..." : "Listen"}</span>
         </button>
       </div>
@@ -226,6 +232,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   color: "#FFFFFF",
                   padding: "3px 8px",
                   borderRadius: 6,
+                  fontFamily: "var(--font-mono)",
                 }}
               >
                 {codeLang}
@@ -245,9 +252,16 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 fontSize: 11,
                 fontWeight: 600,
                 cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
               }}
             >
-              {copiedCode ? "Copied ✓" : "Copy Code"}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>{copiedCode ? "Copied ✓" : "Copy Code"}</span>
             </button>
           </div>
 
@@ -282,7 +296,11 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-              ✈️ Available Flight Options ({originCode} → {destCode})
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 2L11 13" />
+                <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
+              Available Flight Options ({originCode} → {destCode})
             </span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "#D1FAE5", padding: "3px 10px", borderRadius: 12 }}>
               Rust Solver Scored ✓
@@ -305,7 +323,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#6366F1", padding: "3px 8px", borderRadius: 6 }}>
-                  ⭐ OVERALL BEST
+                  OVERALL BEST
                 </span>
                 <span style={{ fontSize: 16, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>
                   $487.00
@@ -327,9 +345,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                     fontSize: 12,
                     cursor: "pointer",
                     boxShadow: "0 2px 8px rgba(99,102,241,0.25)",
+                    transition: "all 150ms ease",
                   }}
                 >
-                  💳 Book via Linked Bank (ACP)
+                  Book via Linked Bank (ACP)
                 </button>
                 <a
                   href="https://www.airfrance.com"
@@ -363,7 +382,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#10B981", padding: "3px 8px", borderRadius: 6 }}>
-                  🏷️ CHEAPEST
+                  CHEAPEST
                 </span>
                 <span style={{ fontSize: 16, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>
                   $440.00
@@ -385,9 +404,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                     fontSize: 12,
                     cursor: "pointer",
                     boxShadow: "0 2px 8px rgba(16,185,129,0.25)",
+                    transition: "all 150ms ease",
                   }}
                 >
-                  💳 Book via Linked Bank (ACP)
+                  Book via Linked Bank (ACP)
                 </button>
                 <a
                   href="https://www.lufthansa.com"
@@ -424,7 +444,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-              🏨 Recommended Hotel Reservations ({destCode})
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3h6v4H9z" />
+              </svg>
+              Recommended Hotel Reservations ({destCode})
             </span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#8B5CF6", background: "#F3E8FF", padding: "3px 10px", borderRadius: 12 }}>
               Verified Stays ✓
@@ -447,7 +470,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#8B5CF6", padding: "3px 8px", borderRadius: 6 }}>
-                  👑 LUXURY STAY
+                  LUXURY STAY
                 </span>
                 <span style={{ fontSize: 16, fontWeight: 800, color: "#8B5CF6", fontFamily: "var(--font-mono)" }}>
                   $180/night
@@ -468,9 +491,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   fontWeight: 700,
                   fontSize: 12,
                   cursor: "pointer",
+                  transition: "all 150ms ease",
                 }}
               >
-                💳 Reserve Hotel Room (ACP)
+                Reserve Hotel Room (ACP)
               </button>
             </div>
 
@@ -489,7 +513,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#F59E0B", padding: "3px 8px", borderRadius: 6 }}>
-                  🌿 BEST VALUE
+                  BEST VALUE
                 </span>
                 <span style={{ fontSize: 16, fontWeight: 800, color: "#F59E0B", fontFamily: "var(--font-mono)" }}>
                   $140/night
@@ -510,9 +534,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   fontWeight: 700,
                   fontSize: 12,
                   cursor: "pointer",
+                  transition: "all 150ms ease",
                 }}
               >
-                💳 Reserve Hotel Room (ACP)
+                Reserve Hotel Room (ACP)
               </button>
             </div>
           </div>
@@ -537,7 +562,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
           }}
         >
           <span>{showTrace ? "▼" : "▶"}</span>
-          <span>🔍 View Execution Trace & Flight Recorder Log ({events.length} events)</span>
+          <span>View Execution Trace & Flight Recorder Log ({events.length} events)</span>
         </button>
 
         {showTrace && (

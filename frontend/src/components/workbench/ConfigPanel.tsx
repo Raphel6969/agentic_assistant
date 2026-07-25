@@ -12,8 +12,12 @@ export const ConfigPanel: React.FC = () => {
   return (
     <div style={{ padding: "28px 36px", maxWidth: 1040, margin: "0 auto", fontFamily: "var(--font-sans), sans-serif" }}>
       <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 26, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-          ⚙️ Workspace Configuration & Integrations
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: "#0F172A", margin: "0 0 6px", display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.10a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          Workspace Configuration & Integrations
         </h2>
         <p style={{ fontSize: 14, color: "#64748B", margin: 0 }}>
           Manage your connected accounts, ACP bank protocol limits, and calendar/email tools.
@@ -36,7 +40,12 @@ export const ConfigPanel: React.FC = () => {
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 26 }}>🏦</span>
+              <div style={{ background: "rgba(99,102,241,0.1)", padding: 8, borderRadius: 12 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
                   Linked Bank Account (ACP)
@@ -127,7 +136,14 @@ export const ConfigPanel: React.FC = () => {
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 26 }}>📅</span>
+              <div style={{ background: "rgba(245,158,11,0.1)", padding: 8, borderRadius: 12 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
                   Google Calendar Integration
@@ -206,7 +222,12 @@ export const ConfigPanel: React.FC = () => {
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 26 }}>✉️</span>
+              <div style={{ background: "rgba(239,68,68,0.1)", padding: 8, borderRadius: 12 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
                   Gmail & Email Assistant
@@ -280,7 +301,13 @@ export const ConfigPanel: React.FC = () => {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 26 }}>🤖</span>
+            <div style={{ background: "rgba(16,185,129,0.1)", padding: 8, borderRadius: 12 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
             <div>
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
                 AI Model & API Keys

@@ -33,13 +33,52 @@ export interface LocalTaskItem {
 
 // ── Header Navigation TabBar ───────────────────────────────────────────────────
 function TabBar({ active, onChange }: { active: NavTab; onChange: (t: NavTab) => void }) {
-  const tabs: { id: NavTab; label: string; emoji: string }[] = [
-    { id: "dashboard", label: "Dashboard", emoji: "🏠" },
-    { id: "tasks", label: "Tasks", emoji: "📋" },
-    { id: "chat", label: "Chat Assistant", emoji: "💬" },
-    { id: "tools", label: "Tools", emoji: "🛠️" },
-    { id: "config", label: "Config", emoji: "⚙️" },
+  const renderTabIcon = (id: NavTab) => {
+    switch (id) {
+      case "dashboard":
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        );
+      case "tasks":
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+          </svg>
+        );
+      case "chat":
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        );
+      case "tools":
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+        );
+      case "config":
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        );
+    }
+  };
+
+  const tabs: { id: NavTab; label: string }[] = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "tasks", label: "Tasks" },
+    { id: "chat", label: "Chat Assistant" },
+    { id: "tools", label: "Tools" },
+    { id: "config", label: "Config" },
   ];
+
   return (
     <div
       style={{
@@ -72,7 +111,8 @@ function TabBar({ active, onChange }: { active: NavTab; onChange: (t: NavTab) =>
             fontFamily: "var(--font-sans), sans-serif",
           }}
         >
-          <span style={{ fontSize: 16 }}>{t.emoji}</span> {t.label}
+          {renderTabIcon(t.id)}
+          {t.label}
         </button>
       ))}
     </div>
@@ -212,7 +252,9 @@ function DedicatedTasksPanel({
             {/* Selected Task Top Banner */}
             <div style={{ borderBottom: "1px solid #E2E8F0", paddingBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                <span style={{ fontSize: 20 }}>📌</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{selectedTask.title}</h3>
               </div>
               <p style={{ margin: 0, fontSize: 13, color: "#64748B" }}>
@@ -239,7 +281,10 @@ function DedicatedTasksPanel({
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748B", gap: 12 }}>
-            <span style={{ fontSize: 48 }}>📋</span>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+            </svg>
             <p style={{ fontSize: 14, margin: 0, fontWeight: 600 }}>Select a task on the left to view flight tickets, code output, or trace logs.</p>
           </div>
         )}
@@ -298,7 +343,7 @@ function AddTaskModal({
         inset: 0,
         zIndex: 400,
         background: "rgba(15,23,42,0.65)",
-        backdropFilter: "blur(8px)",
+        backdropFilter: "blur(12px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -316,6 +361,7 @@ function AddTaskModal({
           boxShadow: "0 24px 80px rgba(0,0,0,0.2)",
           position: "relative",
           fontFamily: "var(--font-sans), sans-serif",
+          border: "1px solid #E2E8F0",
         }}
       >
         <button
@@ -327,19 +373,26 @@ function AddTaskModal({
             background: "#F1F5F9",
             border: "none",
             borderRadius: "50%",
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             cursor: "pointer",
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 700,
             color: "#64748B",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           ×
         </button>
 
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", marginBottom: 24 }}>
-          ✨ Create New Task
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Create New Task
         </h2>
 
         <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6 }}>
@@ -360,8 +413,6 @@ function AddTaskModal({
             boxSizing: "border-box",
             marginBottom: 16,
           }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#E2E8F0")}
         />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
@@ -383,11 +434,11 @@ function AddTaskModal({
                 background: "#FAFAFA",
               }}
             >
-              <option value="trip">✈️ Trip</option>
-              <option value="coding">💻 Coding</option>
-              <option value="scheduling">📅 Scheduling</option>
-              <option value="research">🔍 Research</option>
-              <option value="general">🌐 General</option>
+              <option value="trip">Trip</option>
+              <option value="coding">Coding</option>
+              <option value="scheduling">Scheduling</option>
+              <option value="research">Research</option>
+              <option value="general">General</option>
             </select>
           </div>
           <div>
@@ -410,8 +461,6 @@ function AddTaskModal({
                 outline: "none",
                 boxSizing: "border-box",
               }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#E2E8F0")}
             />
           </div>
         </div>
@@ -431,7 +480,7 @@ function AddTaskModal({
               cursor: "pointer",
             }}
           >
-            ✨ AI Generate
+            AI Generate
           </button>
           <button
             onClick={submit}
@@ -564,7 +613,7 @@ export default function MaestroWorkbench() {
         style={{
           maxWidth: 1440,
           margin: "0 auto",
-          background: "rgba(255,255,255,0.4)",
+          background: "rgba(255,255,255,0.45)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
           minHeight: "100vh",
@@ -588,7 +637,7 @@ export default function MaestroWorkbench() {
         >
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 24 }}>✳</span>
+            <span style={{ fontSize: 24, color: "#6366F1" }}>✳</span>
             <span
               style={{
                 fontFamily: "var(--font-serif), Georgia, serif",
@@ -633,10 +682,12 @@ export default function MaestroWorkbench() {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                fontSize: 16,
               }}
             >
-              ⚙️
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
             </button>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -729,7 +780,7 @@ export default function MaestroWorkbench() {
                     background: "#FFFFFF",
                     borderRadius: 24,
                     padding: 24,
-                    border: "1px solid rgba(0, 0, 0, 0.08)",
+                    border: "1.5px solid #E2E8F0",
                     boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
                   }}
                 >
@@ -762,7 +813,7 @@ export default function MaestroWorkbench() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Project Activity</span>
                     <span style={{ fontSize: 10, fontWeight: 800, background: "#FFFFFF", padding: "2px 8px", borderRadius: 10, color: "#0F172A" }}>
-                      Stats 🌿
+                      Stats
                     </span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
@@ -799,12 +850,12 @@ export default function MaestroWorkbench() {
                     borderRadius: 24,
                     padding: 22,
                     boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
-                    border: "1px solid rgba(0,0,0,0.06)",
+                    border: "1.5px solid #E2E8F0",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                     <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-                      📌 Recent Task Activity & Bookings
+                      Recent Task Activity & Bookings
                     </h3>
                     <span style={{ fontSize: 12, color: "#6366F1", fontWeight: 700, cursor: "pointer" }} onClick={() => setNavTab("tasks")}>
                       View All ({tasks.length}) →
@@ -839,9 +890,6 @@ export default function MaestroWorkbench() {
                       >
                         <div style={{ flex: 1, marginRight: 12 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 16 }}>
-                              {taskItem.domain === "trip" ? "✈️" : taskItem.domain === "coding" ? "💻" : "📅"}
-                            </span>
                             <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
                               {taskItem.title}
                             </span>
@@ -877,12 +925,12 @@ export default function MaestroWorkbench() {
                     background: "#FFFFFF",
                     borderRadius: 24,
                     padding: 20,
-                    border: "1px solid rgba(0,0,0,0.08)",
+                    border: "1.5px solid #E2E8F0",
                     boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", margin: 0 }}>🏵️ Quick Requests</h4>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", margin: 0 }}>Quick Requests</h4>
                     <span
                       onClick={() => setShowAddTask(true)}
                       style={{ fontSize: 12, color: "#6366F1", fontWeight: 700, cursor: "pointer" }}
@@ -892,10 +940,10 @@ export default function MaestroWorkbench() {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {[
-                      { icon: "💻", title: "Write a Python Fibonacci script", domain: "coding" as Domain, budget: 0 },
-                      { icon: "✈️", title: "Plan BOM → Paris trip under $600", domain: "trip" as Domain, budget: 600 },
-                      { icon: "📅", title: "Check calendar for team sync", domain: "scheduling" as Domain, budget: 0 },
-                      { icon: "🔍", title: "Compare Sony headphone prices", domain: "research" as Domain, budget: 0 },
+                      { title: "Write a Python Fibonacci script", domain: "coding" as Domain, budget: 0 },
+                      { title: "Plan BOM → Paris trip under $600", domain: "trip" as Domain, budget: 600 },
+                      { title: "Check calendar for team sync", domain: "scheduling" as Domain, budget: 0 },
+                      { title: "Compare Sony headphone prices", domain: "research" as Domain, budget: 0 },
                     ].map((r) => (
                       <div
                         key={r.title}
@@ -930,7 +978,6 @@ export default function MaestroWorkbench() {
                           e.currentTarget.style.borderColor = "#E2E8F0";
                         }}
                       >
-                        <span style={{ fontSize: 16 }}>{r.icon}</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", flex: 1 }}>{r.title}</span>
                         <span style={{ color: "#6366F1", fontSize: 12 }}>▶</span>
                       </div>
@@ -959,7 +1006,7 @@ export default function MaestroWorkbench() {
         {navTab === "chat" && (
           <div style={{ padding: "28px 36px", maxWidth: 960, margin: "0 auto" }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-              💬 Maestro AI Chat Assistant
+              Maestro AI Chat Assistant
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 24px" }}>
               Ask general questions, check current date/time, request coding advice, or give Maestro tasks to execute.
@@ -986,7 +1033,7 @@ export default function MaestroWorkbench() {
         {navTab === "tools" && (
           <div style={{ padding: "28px 36px" }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-              🛠️ Maestro Tools
+              Maestro Tools
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 28px" }}>
               Select a specialized tool below to configure your parameters and launch an autonomous task!
@@ -1003,28 +1050,24 @@ export default function MaestroWorkbench() {
               {[
                 {
                   title: "Flight Ticket Search",
-                  emoji: "✈️",
                   desc: "Search & compare flight tickets between origin and destination with direct ACP bank booking.",
                   toolType: "flight" as const,
                   color: "#3B82F6",
                 },
                 {
                   title: "Full Trip & Hotel Planner",
-                  emoji: "🏨",
                   desc: "Plan a complete trip including flight tickets AND hotel reservations for your stay.",
                   toolType: "full_trip" as const,
                   color: "#8B5CF6",
                 },
                 {
                   title: "Code Runner",
-                  emoji: "💻",
                   desc: "Specify code requirements in Python or JS for real-time REPL execution.",
                   toolType: "coding" as const,
                   color: "#10B981",
                 },
                 {
                   title: "Scheduler",
-                  emoji: "📅",
                   desc: "Set meeting title, participants, and date/time slot to check calendar availability.",
                   toolType: "scheduling" as const,
                   color: "#F59E0B",
@@ -1032,7 +1075,7 @@ export default function MaestroWorkbench() {
               ].map((tool) => (
                 <div
                   key={tool.title}
-                  onClick={() => openToolModal(tool.toolType, tool.title, tool.emoji)}
+                  onClick={() => openToolModal(tool.toolType, tool.title, "")}
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 20,
@@ -1051,7 +1094,6 @@ export default function MaestroWorkbench() {
                     e.currentTarget.style.borderColor = "#E2E8F0";
                   }}
                 >
-                  <div style={{ fontSize: 44, marginBottom: 14 }}>{tool.emoji}</div>
                   <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
                     {tool.title}
                   </h3>
