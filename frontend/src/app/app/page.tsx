@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import type { Domain, Task, TraceEvent } from "@/lib/types";
 import { useTraceStream } from "@/hooks/useTraceStream";
 import { VoiceWidget } from "@/components/workbench/VoiceWidget";
@@ -508,6 +509,8 @@ function AddTaskModal({
 // ── Main Workbench Component ────────────────────────────────────────────────────
 export default function MaestroWorkbench() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [navTab, setNavTab] = useState<NavTab>("dashboard");
   const [showSettings, setShowSettings] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
@@ -630,8 +633,8 @@ export default function MaestroWorkbench() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "16px 36px",
-            borderBottom: "1px solid rgba(255,255,255,0.8)",
-            background: "rgba(255,255,255,0.92)",
+            borderBottom: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.8)",
+            background: isDark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.92)",
             backdropFilter: "blur(20px)",
           }}
         >
@@ -643,7 +646,7 @@ export default function MaestroWorkbench() {
                 fontFamily: "var(--font-serif), Georgia, serif",
                 fontSize: 24,
                 fontWeight: 700,
-                color: "#0F172A",
+                color: isDark ? "#F8FAFC" : "#0F172A",
               }}
             >
               orcheon
@@ -652,6 +655,27 @@ export default function MaestroWorkbench() {
 
           {/* Header Right Actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              title={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
+              style={{
+                background: isDark ? "#334155" : "#FFFFFF",
+                border: isDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid #E2E8F0",
+                color: isDark ? "#F8FAFC" : "#0F172A",
+                padding: "6px 12px",
+                borderRadius: 18,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              {isDark ? "☀️ Light" : "🌙 Dark"}
+            </button>
+
             <button
               onClick={() => setShowAddTask(true)}
               style={{
@@ -673,8 +697,8 @@ export default function MaestroWorkbench() {
               onClick={() => setShowSettings(true)}
               title="Settings"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(0,0,0,0.08)",
+                background: isDark ? "#334155" : "#FFFFFF",
+                border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.08)",
                 width: 36,
                 height: 36,
                 borderRadius: "50%",
@@ -684,7 +708,7 @@ export default function MaestroWorkbench() {
                 cursor: "pointer",
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isDark ? "#CBD5E1" : "#64748B"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
