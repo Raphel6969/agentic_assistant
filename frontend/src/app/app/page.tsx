@@ -139,6 +139,9 @@ function DedicatedTasksPanel({
   onSelectEvent: (event: TraceEvent) => void;
   selectedEventId?: string;
 }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const domainColor: Record<string, string> = {
     trip: "#3B82F6",
     coding: "#10B981",
@@ -154,10 +157,10 @@ function DedicatedTasksPanel({
         gap: 0,
         height: "calc(100vh - 160px)",
         minHeight: 520,
-        background: "#FFFFFF",
+        background: isDark ? "#1E293B" : "#FFFFFF",
         borderRadius: 24,
         margin: "24px 36px",
-        border: "1px solid #E2E8F0",
+        border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
         boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
         overflow: "hidden",
       }}
@@ -166,8 +169,8 @@ function DedicatedTasksPanel({
       <div
         style={{
           width: 320,
-          borderRight: "1px solid #E2E8F0",
-          background: "#F8FAFC",
+          borderRight: isDark ? "1px solid #334155" : "1px solid #E2E8F0",
+          background: isDark ? "#0F172A" : "#F8FAFC",
           display: "flex",
           flexDirection: "column",
         }}
@@ -175,13 +178,13 @@ function DedicatedTasksPanel({
         <div
           style={{
             padding: "20px 24px",
-            borderBottom: "1px solid #E2E8F0",
+            borderBottom: isDark ? "1px solid #334155" : "1px solid #E2E8F0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>My Active Tasks</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>My Active Tasks</h3>
           <button
             onClick={onAddTaskClick}
             style={{
@@ -201,7 +204,7 @@ function DedicatedTasksPanel({
 
         <div style={{ flex: 1, overflowY: "auto" }}>
           {tasks.length === 0 ? (
-            <div style={{ padding: 32, textAlign: "center", color: "#64748B", fontSize: 13 }}>
+            <div style={{ padding: 32, textAlign: "center", color: isDark ? "#94A3B8" : "#64748B", fontSize: 13 }}>
               No tasks created yet. Click "+ New Task" to start one!
             </div>
           ) : (
@@ -212,14 +215,14 @@ function DedicatedTasksPanel({
                 style={{
                   padding: "16px 20px",
                   cursor: "pointer",
-                  background: selectedTask?.id === t.id ? "#FFFFFF" : "transparent",
+                  background: selectedTask?.id === t.id ? (isDark ? "#1E293B" : "#FFFFFF") : "transparent",
                   borderLeft: selectedTask?.id === t.id ? "4px solid #6366F1" : "4px solid transparent",
-                  borderBottom: "1px solid #F1F5F9",
+                  borderBottom: isDark ? "1px solid #334155" : "1px solid #F1F5F9",
                   transition: "all 150ms ease",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", flex: 1, marginRight: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", flex: 1, marginRight: 8 }}>
                     {t.title}
                   </span>
                   <span
@@ -236,7 +239,7 @@ function DedicatedTasksPanel({
                     {t.domain}
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: 11, color: isDark ? "#94A3B8" : "#64748B", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
                   {t.status}
                   {t.budget > 0 && <span>· ${t.budget}</span>}
@@ -248,20 +251,20 @@ function DedicatedTasksPanel({
       </div>
 
       {/* Right Column: Task Output & Execution Chat (Per-task execution output!) */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#FFFFFF", overflowY: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: isDark ? "#1E293B" : "#FFFFFF", overflowY: "auto" }}>
         {selectedTask ? (
           <div style={{ padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Selected Task Top Banner */}
-            <div style={{ borderBottom: "1px solid #E2E8F0", paddingBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ borderBottom: isDark ? "1px solid #334155" : "1px solid #E2E8F0", paddingBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </svg>
-                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{selectedTask.title}</h3>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>{selectedTask.title}</h3>
                 </div>
-                <p style={{ margin: 0, fontSize: 13, color: "#64748B" }}>
-                  Domain: <strong style={{ color: "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
+                <p style={{ margin: 0, fontSize: 13, color: isDark ? "#94A3B8" : "#64748B" }}>
+                  Domain: <strong style={{ color: isDark ? "#F8FAFC" : "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
                 </p>
               </div>
 
@@ -680,9 +683,12 @@ export default function MaestroWorkbench() {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #D4E7FE 0%, #EBF4FF 50%, #DBEAFE 100%)",
+        background: isDark
+          ? "linear-gradient(180deg, #0B0F19 0%, #0F172A 50%, #090D16 100%)"
+          : "linear-gradient(180deg, #D4E7FE 0%, #EBF4FF 50%, #DBEAFE 100%)",
         fontFamily: "var(--font-sans), sans-serif",
-        color: "#1E293B",
+        color: isDark ? "#F8FAFC" : "#1E293B",
+        transition: "all 180ms ease",
       }}
     >
       {/* Outer Container Frame */}
@@ -690,7 +696,7 @@ export default function MaestroWorkbench() {
         style={{
           maxWidth: 1440,
           margin: "0 auto",
-          background: "rgba(255,255,255,0.45)",
+          background: isDark ? "rgba(15, 23, 42, 0.75)" : "rgba(255,255,255,0.45)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
           minHeight: "100vh",
@@ -707,7 +713,7 @@ export default function MaestroWorkbench() {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "16px 36px",
-            borderBottom: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.8)",
+            borderBottom: isDark ? "1px solid #334155" : "1px solid rgba(255,255,255,0.8)",
             background: isDark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.92)",
             backdropFilter: "blur(20px)",
           }}
@@ -794,7 +800,7 @@ export default function MaestroWorkbench() {
                 alt={userName}
                 style={{ width: 34, height: 34, borderRadius: "50%" }}
               />
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{userName}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>{userName}</span>
             </div>
 
             <button
@@ -802,7 +808,7 @@ export default function MaestroWorkbench() {
               style={{
                 background: "none",
                 border: "none",
-                color: "#64748B",
+                color: isDark ? "#94A3B8" : "#64748B",
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: "pointer",
@@ -827,14 +833,14 @@ export default function MaestroWorkbench() {
                     fontFamily: "var(--font-serif), Georgia, serif",
                     fontSize: 36,
                     fontWeight: 400,
-                    color: "#0F172A",
+                    color: isDark ? "#F8FAFC" : "#0F172A",
                     letterSpacing: "-0.02em",
                     margin: 0,
                   }}
                 >
                   Hi, {userName}!
                 </h1>
-                <p style={{ color: "#64748B", fontSize: 14, margin: "6px 0 0" }}>
+                <p style={{ color: isDark ? "#94A3B8" : "#64748B", fontSize: 14, margin: "6px 0 0" }}>
                   Here is your workspace overview for today.
                 </p>
               </div>
@@ -870,42 +876,15 @@ export default function MaestroWorkbench() {
                 gap: 24,
               }}
             >
-              {/* LEFT COLUMN: Productivity Ring & Stats */}
+              {/* LEFT COLUMN: ACP Financial Audit & Voice Widget */}
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                {/* 85% Productivity Ring */}
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: 24,
-                    padding: 24,
-                    border: "1.5px solid #E2E8F0",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "var(--font-serif), Georgia, serif",
-                      fontSize: 68,
-                      fontWeight: 400,
-                      color: "#0F172A",
-                      lineHeight: 1,
-                      letterSpacing: "-0.04em",
-                    }}
-                  >
-                    <NumberTicker value={85} suffix="%" />
-                  </div>
-                  <div style={{ fontSize: 13, color: "#64748B", fontWeight: 600, marginTop: 6 }}>
-                    Today&apos;s productivity
-                  </div>
-                </div>
-
                 {/* Feature 3: ACP Financial & Token Audit Card */}
                 <div
                   style={{
                     background: isDark ? "#1E293B" : "#FFFFFF",
                     borderRadius: 24,
                     padding: 22,
-                    border: isDark ? "1.5px solid rgba(255,255,255,0.12)" : "1.5px solid #E2E8F0",
+                    border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
                     boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
                     display: "flex",
                     flexDirection: "column",
@@ -940,31 +919,6 @@ export default function MaestroWorkbench() {
 
                   <div style={{ background: isDark ? "#0F172A" : "#F8FAFC", padding: 10, borderRadius: 10, border: isDark ? "1px solid #334155" : "1px solid #E2E8F0", fontSize: 11, fontFamily: "var(--font-mono)", color: isDark ? "#CBD5E1" : "#475569" }}>
                     Last Token: <code style={{ color: "#6366F1" }}>acp_spt_4892_01</code> (Redeemed ✓)
-                  </div>
-                </div>
-
-                {/* Project Activity Card */}
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #FDE047, #FACC15)",
-                    borderRadius: 24,
-                    padding: 22,
-                    boxShadow: "0 10px 25px rgba(234,179,8,0.25)",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Project Activity</span>
-                    <span style={{ fontSize: 10, fontWeight: 800, background: "#FFFFFF", padding: "2px 8px", borderRadius: 10, color: "#0F172A" }}>
-                      Stats
-                    </span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                    {[{ v: "26h", l: "Sync Calls" }, { v: "11h", l: "Workshops" }, { v: "6h", l: "Reviews" }].map((s) => (
-                      <div key={s.l}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>{s.v}</div>
-                        <div style={{ fontSize: 10, color: "#713F12", fontWeight: 700 }}>{s.l}</div>
-                      </div>
-                    ))}
                   </div>
                 </div>
 

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import type { TraceEvent, Task } from "@/lib/types";
 import { TraceEventNode } from "@/components/trace/TraceEventNode";
 import { ArtifactExporter } from "@/components/workbench/ArtifactExporter";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AssistantMessageCardProps {
   task: Task;
@@ -20,6 +21,9 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   onSelectEvent,
   selectedEventId,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [showTrace, setShowTrace] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -165,16 +169,16 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   return (
     <div
       style={{
-        background: "#FFFFFF",
+        background: isDark ? "#1E293B" : "#FFFFFF",
         borderRadius: "24px",
         padding: 24,
         display: "flex",
         flexDirection: "column",
         gap: 18,
-        border: "1.5px solid #E2E8F0",
+        border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
         boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
         position: "relative",
-        color: "#0F172A",
+        color: isDark ? "#F8FAFC" : "#0F172A",
         fontFamily: "var(--font-sans), sans-serif",
       }}
     >
@@ -200,10 +204,10 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             </svg>
           </div>
           <div>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#0F172A", display: "inline-block" }}>
+            <span style={{ fontWeight: 700, fontSize: 15, color: isDark ? "#F8FAFC" : "#0F172A", display: "inline-block" }}>
               Agentic Assistant
             </span>
-            <span style={{ fontSize: 11, color: "#64748B", marginLeft: 8, fontFamily: "var(--font-mono)" }}>
+            <span style={{ fontSize: 11, color: isDark ? "#94A3B8" : "#64748B", marginLeft: 8, fontFamily: "var(--font-mono)" }}>
               {new Date(task.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
@@ -213,11 +217,11 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
           onClick={handleSpeak}
           title="Read response out loud"
           style={{
-            background: isSpeaking ? "rgba(99, 102, 241, 0.12)" : "#F1F5F9",
-            border: "1px solid " + (isSpeaking ? "#6366F1" : "#E2E8F0"),
+            background: isSpeaking ? "rgba(99, 102, 241, 0.12)" : isDark ? "#334155" : "#F1F5F9",
+            border: "1px solid " + (isSpeaking ? "#6366F1" : isDark ? "#475569" : "#E2E8F0"),
             borderRadius: 16,
             padding: "6px 14px",
-            color: isSpeaking ? "#6366F1" : "#475569",
+            color: isSpeaking ? "#6366F1" : isDark ? "#CBD5E1" : "#475569",
             cursor: "pointer",
             fontSize: 12,
             fontWeight: 600,
@@ -236,7 +240,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       </div>
 
       {/* Friendly Conversational Text Summary */}
-      <div style={{ fontSize: 14, lineHeight: 1.6, color: "#1E293B", fontWeight: 500 }}>
+      <div style={{ fontSize: 14, lineHeight: 1.6, color: isDark ? "#F8FAFC" : "#1E293B", fontWeight: 500 }}>
         {String(friendlySummary)}
       </div>
 
@@ -326,8 +330,8 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       {isTripTask && (
         <div
           style={{
-            background: "#F8FAFC",
-            border: "1.5px solid #E2E8F0",
+            background: isDark ? "#0F172A" : "#F8FAFC",
+            border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
             borderRadius: 20,
             padding: 20,
             display: "flex",
@@ -336,14 +340,14 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 2L11 13" />
                 <path d="M22 2l-7 20-4-9-9-4 20-7z" />
               </svg>
               Available Flight Options ({originCode} → {destCode} · Date: {activeDate})
             </span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "#D1FAE5", padding: "3px 10px", borderRadius: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "rgba(16,185,129,0.15)", padding: "3px 10px", borderRadius: 12 }}>
               Rust Solver Scored ✓
             </span>
           </div>
@@ -355,7 +359,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 padding: 16,
                 borderRadius: 16,
                 border: "2px solid #6366F1",
-                background: "#FFFFFF",
+                background: isDark ? "#1E293B" : "#FFFFFF",
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
@@ -370,8 +374,8 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   $487.00
                 </span>
               </div>
-              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Air France • AF224</div>
-              <div style={{ fontSize: 12, color: "#64748B" }}>08:30 AM → 02:15 PM (8h 45m Direct)</div>
+              <div style={{ fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", fontSize: 14 }}>Air France • AF224</div>
+              <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B" }}>08:30 AM → 02:15 PM (8h 45m Direct)</div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
@@ -400,7 +404,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                 padding: 16,
                 borderRadius: 16,
                 border: "2px solid #10B981",
-                background: "#FFFFFF",
+                background: isDark ? "#1E293B" : "#FFFFFF",
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
@@ -415,8 +419,8 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   $440.00
                 </span>
               </div>
-              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Lufthansa • LH755</div>
-              <div style={{ fontSize: 12, color: "#64748B" }}>06:00 AM → 01:00 PM (10h, Layover FRA)</div>
+              <div style={{ fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", fontSize: 14 }}>Lufthansa • LH755</div>
+              <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B" }}>06:00 AM → 01:00 PM (10h, Layover FRA)</div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
@@ -445,8 +449,8 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       {/* DYNAMIC CARD 3: Interactive In-Task Assistant Chat Thread */}
       <div
         style={{
-          background: "#F8FAFC",
-          border: "1.5px solid #E2E8F0",
+          background: isDark ? "#0F172A" : "#F8FAFC",
+          border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
           borderRadius: 20,
           padding: 16,
           display: "flex",
@@ -465,12 +469,12 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
               <div key={idx} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
                 <div
                   style={{
-                    background: m.role === "user" ? "#6366F1" : "#FFFFFF",
-                    color: m.role === "user" ? "#FFFFFF" : "#0F172A",
+                    background: m.role === "user" ? "#6366F1" : isDark ? "#1E293B" : "#FFFFFF",
+                    color: m.role === "user" ? "#FFFFFF" : isDark ? "#F8FAFC" : "#0F172A",
                     borderRadius: m.role === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
                     padding: "8px 14px",
                     fontSize: 12,
-                    border: m.role === "ai" ? "1px solid #E2E8F0" : "none",
+                    border: m.role === "ai" ? (isDark ? "1px solid #334155" : "1px solid #E2E8F0") : "none",
                   }}
                 >
                   {m.text}
@@ -490,21 +494,21 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             placeholder="Ask 'Which is better?', 'Why Air France?', or 'Change date to Sept 20'..."
             style={{
               flex: 1,
-              border: "1.5px solid #E2E8F0",
+              border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 20,
               padding: "8px 14px",
               fontSize: 12,
-              color: "#0F172A",
+              color: isDark ? "#F8FAFC" : "#0F172A",
               outline: "none",
-              background: "#FFFFFF",
+              background: isDark ? "#1E293B" : "#FFFFFF",
             }}
           />
           <button
             onClick={handleInTaskSend}
             disabled={!inTaskInput.trim()}
             style={{
-              background: inTaskInput.trim() ? "#6366F1" : "#E2E8F0",
-              color: inTaskInput.trim() ? "#FFFFFF" : "#94A3B8",
+              background: inTaskInput.trim() ? "#6366F1" : isDark ? "#334155" : "#E2E8F0",
+              color: inTaskInput.trim() ? "#FFFFFF" : isDark ? "#64748B" : "#94A3B8",
               border: "none",
               borderRadius: 20,
               padding: "8px 16px",
