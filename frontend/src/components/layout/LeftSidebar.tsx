@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { Domain } from "@/lib/types";
+import { ConstraintSlider } from "@/components/solver/ConstraintSlider";
 
 interface LeftSidebarProps {
   selectedDomain: Domain;
@@ -82,6 +83,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <div style={{ color: "var(--color-text-muted)", fontSize: 11 }}>tier: read_only (Open-Meteo REST)</div>
           </div>
         </div>
+      </div>
+
+      <div style={{ marginTop: "auto" }}>
+        <ConstraintSlider />
       </div>
     </aside>
   );

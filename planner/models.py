@@ -20,6 +20,7 @@ class TaskStatus(str, Enum):
     PLANNING = "planning"
     DISPATCHING = "dispatching"
     AWAITING = "awaiting"
+    AWAITING_APPROVAL = "awaiting_approval"
     VERIFYING = "verifying"
     DONE = "done"
     FAILED = "failed"
@@ -71,6 +72,11 @@ class TaskCreateRequest(BaseModel):
     budget_ceiling: float = 500.0
 
 
+class TaskApprovalRequest(BaseModel):
+    approved: bool
+    modified_parameters: Optional[Dict[str, Any]] = None
+
+
 class TaskState(BaseModel):
     task_id: str
     status: TaskStatus = TaskStatus.IDLE
@@ -81,4 +87,5 @@ class TaskState(BaseModel):
     current_step: int = 0
     plan_steps: List[str] = Field(default_factory=list)
     results: Dict[str, Any] = Field(default_factory=dict)
+    pending_action: Optional[Dict[str, Any]] = None
     error: Optional[str] = None

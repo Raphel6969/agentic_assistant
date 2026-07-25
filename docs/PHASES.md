@@ -58,13 +58,14 @@ Blockers: None.
 **Goal:** a judge unfamiliar with the code can watch the trace and understand it.
 **Checkpoint:** trace UI is clickable/scrubbable and self-explanatory.
 
-- [ ] Flight Recorder timeline UI (plan → tool calls → costs → decisions → confidence)
-- [ ] Human-in-the-loop approval modal for irreversible/high-risk actions
-- [ ] Structured clarification/elicitation flow (only asks when a decision truly branches)
+- [x] Flight Recorder timeline UI (plan → tool calls → costs → decisions → confidence)
+- [x] Human-in-the-loop approval modal for irreversible/high-risk actions (`frontend/src/components/modals/ApprovalModal.tsx`)
+- [x] Structured clarification/elicitation flow (only asks when a decision truly branches)
+- [x] Rust solver multi-objective constraint slider (`frontend/src/components/solver/ConstraintSlider.tsx`)
 
-Status: **NOT STARTED**
-Approach notes:
-Blockers:
+Status: **DONE**
+Approach notes: Flight Recorder timeline UI with live WS stream; Human-in-the-loop approval modal with spring physics animation and parameter edit support (`ApprovalModal.tsx`); Rust solver multi-objective constraint optimization slider (`ConstraintSlider.tsx`); async approval signal waiting in Python planner state machine (`POST /tasks/{task_id}/approval`).
+Blockers: None.
 
 ---
 

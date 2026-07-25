@@ -8,6 +8,7 @@ import { LeftSidebar } from "@/components/layout/LeftSidebar";
 import { ChatInputBar } from "@/components/layout/ChatInputBar";
 import { FlightRecorder } from "@/components/trace/FlightRecorder";
 import { EventDetailPanel } from "@/components/trace/EventDetailPanel";
+import { ApprovalModal } from "@/components/modals/ApprovalModal";
 
 export default function Home() {
   const [selectedDomain, setSelectedDomain] = useState<Domain>("trip");
@@ -48,6 +49,14 @@ export default function Home() {
       <EventDetailPanel
         event={selectedEvent}
         onClose={() => setSelectedEvent(null)}
+      />
+
+      <ApprovalModal
+        event={events.find((e) => e.guardrail_result === "requires_approval") || null}
+        taskId={currentTask?.task_id || ""}
+        onResolved={(approved) => {
+          console.log("Approval resolved:", approved);
+        }}
       />
 
       <ChatInputBar

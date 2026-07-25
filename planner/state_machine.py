@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from gateway_client import GatewayClient
 from llm import generate_plan_steps, select_tool_call
@@ -16,8 +16,10 @@ from trace import trace_manager
 
 logger = logging.getLogger(__name__)
 
-# Active running tasks in-memory
+# Active running tasks & pending approval signals
 _active_tasks: Dict[str, TaskState] = {}
+_pending_approvals: Dict[str, Tuple[asyncio.Event, Dict[str, bool]]] = {}
+
 gateway = GatewayClient()
 solver = SolverClient()
 
@@ -39,10 +41,22 @@ def create_task_state(task_id: str, description: str, domain: str = "trip", budg
     return state
 
 
+def submit_approval_decision(task_id: str, approved: bool, modified_args: Optional[Dict] = None) -> bool:
+    """Submit user approval response for a pending action."""
+    if task_id in _pending_approvals:
+        event, result_holder = _pending_approvals[task_id]
+        result_holder["approved"] = approved
+        if modified_args and task_id in _active_tasks and _active_tasks[task_id].pending_action:
+            _active_tasks[task_id].pending_action["arguments"] = modified_args
+        event.set()
+        return True
+    return False
+
+
 async def run_planner_loop(task_id: str):
     """
     Main explicit state machine execution loop:
-    IDLE -> PLANNING -> DISPATCHING -> AWAITING -> VERIFYING -> DONE / FAILED
+    IDLE -> PLANNING -> DISPATCHING -> GUARDRAIL -> (AWAITING_APPROVAL) -> AWAITING -> VERIFYING -> DONE / FAILED
     """
     state = get_task_state(task_id)
     if not state:
@@ -153,17 +167,56 @@ async def run_planner_loop(task_id: str):
                 return
 
             if g_result == "requires_approval":
+                state.status = TaskStatus.AWAITING_APPROVAL
+                state.pending_action = {
+                    "tool": tool_name,
+                    "arguments": tool_args,
+                    "cost_estimate": cost_est,
+                    "reasoning": reasoning,
+                }
+
                 trace_manager.create_event(
                     task_id=task_id,
                     event_type=TraceEventType.HUMAN_APPROVAL,
                     tool=tool_name,
                     input_data=tool_args,
-                    reasoning=f"Action '{tool_name}' requires human approval before proceeding.",
+                    cost_estimate=cost_est,
+                    reasoning=f"Action '{tool_name}' is tier Irreversible and requires explicit human approval.",
                     risk_tier=RiskTier.IRREVERSIBLE,
                     guardrail_result=GuardrailResult.REQUIRES_APPROVAL,
                 )
-                # In Phase 1, auto-approve after logging for happy path testing
-                await asyncio.sleep(0.5)
+
+                # Setup approval event
+                approval_event = asyncio.Event()
+                result_holder = {"approved": False}
+                _pending_approvals[task_id] = (approval_event, result_holder)
+
+                try:
+                    # Wait up to 60 seconds for user response via POST /tasks/{task_id}/approval
+                    await asyncio.wait_for(approval_event.wait(), timeout=60.0)
+                except asyncio.TimeoutError:
+                    logger.warning(f"Task {task_id} approval timed out. Assuming rejected.")
+                    result_holder["approved"] = False
+                finally:
+                    _pending_approvals.pop(task_id, None)
+
+                if not result_holder["approved"]:
+                    state.status = TaskStatus.FAILED
+                    state.error = f"Human Approval Rejected: Action '{tool_name}' was rejected by user."
+                    trace_manager.create_event(
+                        task_id=task_id,
+                        event_type=TraceEventType.ERROR,
+                        tool=tool_name,
+                        reasoning=f"Action '{tool_name}' rejected by human operator.",
+                        guardrail_result=GuardrailResult.BLOCKED,
+                    )
+                    return
+
+                # If user modified arguments in approval modal
+                if state.pending_action and "arguments" in state.pending_action:
+                    tool_args = state.pending_action["arguments"]
+
+                state.pending_action = None
 
             # 4. State: AWAITING (Invoke Tool via Gateway)
             state.status = TaskStatus.AWAITING

@@ -12,7 +12,7 @@ from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect, HT
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from models import TaskCreateRequest, TaskState
+from models import TaskApprovalRequest, TaskCreateRequest, TaskState
 from state_machine import create_task_state, get_task_state, run_planner_loop
 from trace import trace_manager
 
@@ -73,6 +73,28 @@ async def get_task(task_id: str) -> dict:
     if not state:
         raise HTTPException(status_code=404, detail="Task not found")
     return state.model_dump()
+
+
+@app.post("/tasks/{task_id}/approval")
+async def submit_approval(task_id: str, req: TaskApprovalRequest) -> dict:
+    """
+    Submit human approval decision (approve/reject/modify) for a pending irreversible action.
+    """
+    from state_machine import submit_approval_decision
+
+    success = submit_approval_decision(
+        task_id=task_id,
+        approved=req.approved,
+        modified_args=req.modified_parameters,
+    )
+    if not success:
+        raise HTTPException(status_code=400, detail="No pending approval found for task or already resolved")
+
+    return {
+        "task_id": task_id,
+        "status": "approval_received",
+        "approved": req.approved,
+    }
 
 
 @app.get("/tasks/{task_id}/trace")
