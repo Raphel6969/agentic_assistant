@@ -45,10 +45,33 @@ async def health() -> dict:
     return {"status": "ok", "service": "planner", "phase": "1-core-loop"}
 
 
+@app.post("/chat")
+async def chat(body: dict) -> dict:
+    """
+    General chat endpoint: routes greeting/casual messages to friendly response
+    and agentic tasks to the planner.  Expects { "message": "..." }.
+    """
+    from llm import detect_prompt_domain, generate_greeting_response, Intent
+
+    message = (body.get("message") or "").strip()
+    if not message:
+        return {"type": "greeting", "reply": "Hey! How can I help?"}
+
+    domain = detect_prompt_domain(message)
+
+    if domain == Intent.GREETING.value:
+        reply = await generate_greeting_response(message)
+        return {"type": "greeting", "reply": reply}
+
+    # For all other intents return signal to start a task
+    return {"type": "task", "domain": domain, "description": message}
+
+
 @app.post("/tasks")
 async def create_task(req: TaskCreateRequest, background_tasks: BackgroundTasks) -> dict:
     """
     Create a new autonomous task and launch state machine planner loop in background.
+    Greetings are short-circuited via /chat — only real tasks reach this endpoint.
     """
     task_id = str(uuid.uuid4())
     state = create_task_state(
