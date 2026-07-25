@@ -78,12 +78,16 @@ export function useTraceStream() {
           return [...prev, traceEvent];
         });
 
-        if (traceEvent.cost_estimate) {
+        // Accumulate budget spent reactively
+        if (traceEvent.cost_estimate || traceEvent.output?.total_spent) {
           setCurrentTask((prevTask: Task | null) => {
             if (!prevTask) return null;
+            const updatedSpent = typeof traceEvent.output?.total_spent === "number"
+              ? traceEvent.output.total_spent
+              : (prevTask.budget_spent || 0) + (traceEvent.cost_estimate || 0);
             return {
               ...prevTask,
-              budget_spent: (prevTask.budget_spent || 0) + (traceEvent.cost_estimate || 0),
+              budget_spent: updatedSpent,
             };
           });
         }

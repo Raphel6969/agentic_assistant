@@ -9,9 +9,9 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+  const [geminiKey, setGeminiKey] = useState("");
   const [groqKey, setGroqKey] = useState("");
   const [openRouterKey, setOpenRouterKey] = useState("");
-  const [googleCalKey, setGoogleCalKey] = useState("");
   const [saved, setSaved] = useState(false);
 
   if (!isOpen) return null;
@@ -63,7 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>⚙️</span>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>
-                Settings & Custom Integrations
+                LLM Provider & API Keys Configuration
               </h3>
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", fontSize: 18 }}>
@@ -72,6 +72,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           </div>
 
           <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Google Gemini API Key</label>
+                <span style={{ fontSize: 10, color: "var(--color-emerald)", fontFamily: "var(--font-mono)" }}>Model: gemini-2.0-flash</span>
+              </div>
+              <input
+                type="password"
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                style={{
+                  width: "100%",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-sm)",
+                  padding: "10px 12px",
+                  color: "#fff",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 13,
+                  marginTop: 4,
+                }}
+              />
+            </div>
+
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Groq API Key</label>
               <input
@@ -114,27 +138,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               />
             </div>
 
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Google Calendar API Key (Optional)</label>
-              <input
-                type="password"
-                value={googleCalKey}
-                onChange={(e) => setGoogleCalKey(e.target.value)}
-                placeholder="AIzaSy..."
-                style={{
-                  width: "100%",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-sm)",
-                  padding: "10px 12px",
-                  color: "#fff",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 13,
-                  marginTop: 4,
-                }}
-              />
-            </div>
-
             <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
               <button
                 type="submit"
@@ -150,7 +153,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   cursor: "pointer",
                 }}
               >
-                {saved ? "Settings Saved ✓" : "Save Keys & Configuration"}
+                {saved ? "Keys Configured ✓" : "Save Provider Credentials"}
               </button>
             </div>
           </form>

@@ -23,6 +23,11 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  // Detect domain from task description
+  const textLower = String(task.description || "").toLowerCase();
+  const isTripTask = textLower.includes("trip") || textLower.includes("flight") || textLower.includes("hotel") || textLower.includes("paris");
+  const isCodingTask = textLower.includes("code") || textLower.includes("python") || textLower.includes("js") || textLower.includes("script") || textLower.includes("write");
+
   // Find tool calls and final summary
   const toolCalls = events.filter((e) => e.type === "tool_call");
   const flightEvent = toolCalls.find((e) => e.tool === "search_flights");
@@ -123,8 +128,52 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         {String(friendlySummary)}
       </div>
 
-      {/* RICH UI EMBEDDED CARD 1: Flight Options (Cheapest vs Best + Dual Booking Buttons) */}
-      {Array.isArray(flightEvent?.output?.flights) && (
+      {/* DYNAMIC CARD 1: Polyglot Code Block Output (Only for Coding tasks or code events) */}
+      {(codeEvent?.output || isCodingTask) && (
+        <div
+          style={{
+            background: "#050508",
+            border: "1px solid var(--color-border)",
+            borderRadius: "var(--radius-md)",
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: "var(--color-indigo)", color: "#fff", padding: "2px 6px", borderRadius: "var(--radius-sm)" }}>
+                {codeLang}
+              </span>
+              <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+                {codeInfo || "Executed via Polyglot REPL Engine"}
+              </span>
+            </div>
+            <button
+              onClick={() => copyToClipboard(codeOutput || "print('Hello World')")}
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "none",
+                color: "#fff",
+                borderRadius: "var(--radius-sm)",
+                padding: "4px 8px",
+                fontSize: 11,
+                cursor: "pointer",
+              }}
+            >
+              {copiedCode ? "Copied ✓" : "Copy Code"}
+            </button>
+          </div>
+
+          <pre style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "#60A5FA", overflowX: "auto" }}>
+            {codeOutput || "def solve():\n    print('Executing code task...')\nsolve()"}
+          </pre>
+        </div>
+      )}
+
+      {/* DYNAMIC CARD 2: Flight Options (ONLY rendered for Trip tasks!) */}
+      {isTripTask && Array.isArray(flightEvent?.output?.flights) && (
         <div
           style={{
             background: "rgba(0, 0, 0, 0.4)",
@@ -258,50 +307,6 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* RICH UI EMBEDDED CARD 2: Polyglot Code Block Output */}
-      {codeEvent?.output && (
-        <div
-          style={{
-            background: "#050508",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: "var(--color-indigo)", color: "#fff", padding: "2px 6px", borderRadius: "var(--radius-sm)" }}>
-                {codeLang}
-              </span>
-              <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
-                {codeInfo}
-              </span>
-            </div>
-            <button
-              onClick={() => copyToClipboard(codeOutput)}
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "none",
-                color: "#fff",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 8px",
-                fontSize: 11,
-                cursor: "pointer",
-              }}
-            >
-              {copiedCode ? "Copied ✓" : "Copy Code"}
-            </button>
-          </div>
-
-          <pre style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "#60A5FA", overflowX: "auto" }}>
-            {codeOutput}
-          </pre>
         </div>
       )}
 

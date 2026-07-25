@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({ task }) => {
       )}
 
       {/* Budget Ring & Tracker */}
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, whiteSpace: "nowrap" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span style={{ fontSize: 11, color: "var(--color-text-muted)", textTransform: "uppercase" }}>
             Budget Spent
