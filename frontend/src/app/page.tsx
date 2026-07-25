@@ -507,14 +507,15 @@ export default function LandingPage() {
                 key={tab.id}
                 onClick={() => setActiveArchTab(tab.id as any)}
                 style={{
-                  background: activeArchTab === tab.id ? "#0F172A" : "transparent",
+                  background: activeArchTab === tab.id ? "#6366F1" : "transparent",
                   color: activeArchTab === tab.id ? "#FFFFFF" : "#64748B",
-                  border: "none",
+                  border: activeArchTab === tab.id ? "1px solid #6366F1" : "1px solid #E2E8F0",
                   borderRadius: 20,
                   padding: "8px 18px",
                   fontSize: 13,
                   fontWeight: 600,
                   cursor: "pointer",
+                  boxShadow: activeArchTab === tab.id ? "0 4px 14px rgba(99,102,241,0.25)" : "none",
                   transition: "all 150ms ease",
                 }}
               >
@@ -582,7 +583,7 @@ export default function LandingPage() {
               <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>
                 The Rust solver ranks options by minimizing a weighted multi-objective cost function:
               </p>
-              <div style={{ background: "#0F172A", color: "#38BDF8", padding: 18, borderRadius: 14, fontFamily: "var(--font-mono)", fontSize: 13 }}>
+              <div style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0", color: "#4F46E5", padding: "18px 24px", borderRadius: 16, fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700 }}>
                 Score = (Price / Budget) * 0.50 + (Duration_Hours / 24) * 0.30 + (1.0 - Rating / 5.0) * 0.20
               </div>
             </div>
