@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface VoiceWidgetProps {
   onSpeechInput?: (text: string) => void;
 }
 
 export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState<string>("");
   const [status, setStatus] = useState<"idle" | "listening" | "done">("idle");
@@ -75,7 +79,7 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
   return (
     <div
       style={{
-        background: "rgba(255, 255, 255, 0.85)",
+        background: isDark ? "#1E293B" : "rgba(255, 255, 255, 0.85)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderRadius: "20px",
@@ -83,8 +87,9 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
         display: "flex",
         flexDirection: "column",
         gap: 14,
-        border: "1px solid rgba(255, 255, 255, 0.9)",
-        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.06)",
+        border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+        boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 30px rgba(0, 0, 0, 0.06)",
+        transition: "all 180ms ease",
       }}
     >
       {/* Header */}
@@ -107,11 +112,11 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
               fontFamily: "var(--font-serif), Georgia, serif",
               fontSize: 18,
               fontWeight: 600,
-              color: "#0F172A",
+              color: isDark ? "#F8FAFC" : "#0F172A",
               margin: 0,
             }}
           >
-            {isListening ? "Listening..." : "Talk to Maestro"}
+            {isListening ? "Listening..." : "Talk to Orcheon"}
           </h3>
         </div>
 
@@ -154,7 +159,7 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
               height: isListening ? Math.random() * 26 + 6 : h,
               background: isListening
                 ? `linear-gradient(180deg, #6366F1, #818CF8)`
-                : "rgba(99, 102, 241, 0.25)",
+                : "rgba(99, 102, 241, 0.35)",
               borderRadius: 4,
               transition: isListening ? `height ${80 + i * 20}ms ease-in-out` : "height 300ms ease",
               animationDelay: `${i * 60}ms`,
@@ -167,13 +172,13 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
       {(transcript || status === "done") && (
         <div
           style={{
-            background: "rgba(99, 102, 241, 0.06)",
+            background: isDark ? "#0F172A" : "rgba(99, 102, 241, 0.06)",
             borderRadius: 10,
             padding: "10px 14px",
             fontSize: 13,
-            color: "#1E293B",
+            color: isDark ? "#F8FAFC" : "#1E293B",
             fontStyle: transcript ? "normal" : "italic",
-            border: "1px solid rgba(99,102,241,0.15)",
+            border: isDark ? "1px solid #334155" : "1px solid rgba(99,102,241,0.15)",
             minHeight: 36,
           }}
         >
@@ -183,8 +188,8 @@ export const VoiceWidget: React.FC<VoiceWidgetProps> = ({ onSpeechInput }) => {
 
       {/* Helper text */}
       {status === "idle" && !transcript && (
-        <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
-          Press the mic button and speak — Maestro will understand your intent automatically.
+        <p style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", margin: 0 }}>
+          Press the mic button and speak — Orcheon will understand your intent automatically.
         </p>
       )}
     </div>

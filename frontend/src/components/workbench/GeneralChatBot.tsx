@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import type { Domain } from "@/lib/types";
+import { useTheme } from "@/context/ThemeContext";
 
 export interface ChatMessage {
   role: "user" | "ai";
@@ -20,6 +21,9 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
   messages: externalMessages,
   onUpdateMessages,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const defaultInitial: ChatMessage[] = [
     {
       role: "ai",
@@ -111,11 +115,11 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
         isTaskTrigger = true;
         targetDomain = "coding";
       } else if (lower.includes("schedule") || lower.includes("calendar") || lower.includes("meeting")) {
-        replyText = "Checking calendar slots and drafting invite for your task now! 📅 Check your Tasks panel.";
+        replyText = "Checking calendar slots and drafting your meeting invite! 📅 Check the output in your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "scheduling";
       } else {
-        replyText = `Orcheon AI here! I'm ready to help you with '${text}'. You can ask me anything or type 'plan this for me' to start an autonomous task.`;
+        replyText = `That's an interesting question! As Orcheon AI, I can help answer that or execute a dedicated workflow for you.`;
       }
 
       const aiMsg: ChatMessage = {
@@ -133,9 +137,8 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
     }, 400);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
       processQuery(input);
     }
   };
@@ -143,10 +146,10 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
   return (
     <div
       style={{
-        background: "#FFFFFF",
+        background: isDark ? "#1E293B" : "#FFFFFF",
         borderRadius: 24,
-        border: "1.5px solid #E2E8F0",
-        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+        border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+        boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.4)" : "0 10px 30px rgba(0,0,0,0.05)",
         display: "flex",
         flexDirection: "column",
         height: 520,
@@ -157,8 +160,8 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       {/* Bot Header */}
       <div
         style={{
-          background: "#FFFFFF",
-          borderBottom: "1.5px solid #E2E8F0",
+          background: isDark ? "#1E293B" : "#FFFFFF",
+          borderBottom: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
           padding: "16px 24px",
           display: "flex",
           alignItems: "center",
@@ -183,8 +186,8 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
           </svg>
         </div>
         <div>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Orcheon AI Assistant</h3>
-          <span style={{ fontSize: 11, color: "#64748B" }}>Persistent session chat — answers questions, date & runs tasks</span>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>Orcheon AI Assistant</h3>
+          <span style={{ fontSize: 11, color: isDark ? "#94A3B8" : "#64748B" }}>Persistent session chat — answers questions, date & runs tasks</span>
         </div>
       </div>
 
@@ -197,7 +200,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
           display: "flex",
           flexDirection: "column",
           gap: 12,
-          background: "#F8FAFC",
+          background: isDark ? "#0F172A" : "#F8FAFC",
         }}
       >
         {messages.map((m, i) => (
@@ -210,25 +213,25 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
           >
             <div
               style={{
-                background: m.role === "user" ? "#6366F1" : "#FFFFFF",
-                color: m.role === "user" ? "#FFFFFF" : "#0F172A",
+                background: m.role === "user" ? "#6366F1" : isDark ? "#1E293B" : "#FFFFFF",
+                color: m.role === "user" ? "#FFFFFF" : isDark ? "#F8FAFC" : "#0F172A",
                 borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                 padding: "12px 16px",
                 fontSize: 13,
                 lineHeight: 1.5,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                border: m.role === "ai" ? "1.5px solid #E2E8F0" : "none",
+                border: m.role === "ai" ? (isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0") : "none",
               }}
             >
               {m.text}
             </div>
-            <span style={{ fontSize: 10, color: "#94A3B8", marginTop: 4, display: "block", textAlign: m.role === "user" ? "right" : "left" }}>
+            <span style={{ fontSize: 10, color: isDark ? "#94A3B8" : "#94A3B8", marginTop: 4, display: "block", textAlign: m.role === "user" ? "right" : "left" }}>
               {m.time}
             </span>
           </div>
         ))}
         {isThinking && (
-          <div style={{ alignSelf: "flex-start", fontSize: 12, color: "#64748B", fontStyle: "italic" }}>
+          <div style={{ alignSelf: "flex-start", fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", fontStyle: "italic" }}>
             Orcheon AI is thinking...
           </div>
         )}
@@ -238,8 +241,8 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       <div
         style={{
           padding: "14px 20px",
-          background: "#FFFFFF",
-          borderTop: "1.5px solid #E2E8F0",
+          background: isDark ? "#1E293B" : "#FFFFFF",
+          borderTop: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
           display: "flex",
           gap: 10,
         }}
@@ -252,24 +255,24 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
           placeholder="Ask general question, date, or describe a task..."
           style={{
             flex: 1,
-            border: "1.5px solid #E2E8F0",
+            border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
             borderRadius: 24,
             padding: "10px 18px",
             fontSize: 13,
-            color: "#0F172A",
+            color: isDark ? "#F8FAFC" : "#0F172A",
             outline: "none",
-            background: "#FAFAFA",
+            background: isDark ? "#0F172A" : "#FAFAFA",
             fontFamily: "var(--font-sans), sans-serif",
           }}
           onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#E2E8F0")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = isDark ? "#334155" : "#E2E8F0")}
         />
         <button
           onClick={() => processQuery(input)}
           disabled={!input.trim()}
           style={{
-            background: input.trim() ? "linear-gradient(135deg, #6366F1, #4F46E5)" : "#E2E8F0",
-            color: input.trim() ? "#FFFFFF" : "#94A3B8",
+            background: input.trim() ? "linear-gradient(135deg, #6366F1, #4F46E5)" : isDark ? "#334155" : "#E2E8F0",
+            color: input.trim() ? "#FFFFFF" : isDark ? "#64748B" : "#94A3B8",
             border: "none",
             borderRadius: 24,
             padding: "10px 22px",

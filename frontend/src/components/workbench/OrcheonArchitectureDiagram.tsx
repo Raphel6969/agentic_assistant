@@ -1,8 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 export const OrcheonArchitectureDiagram: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [activeNode, setActiveNode] = useState<"frontend" | "planner" | "solver" | "gateway" | "postgres" | "apis">("planner");
 
   const nodeDetails = {
@@ -51,15 +55,15 @@ export const OrcheonArchitectureDiagram: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "var(--font-sans), sans-serif" }}>
-      {/* Visual System Topology Map (Light Glass Theme) */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "var(--font-sans), sans-serif", color: isDark ? "#F8FAFC" : "#0F172A" }}>
+      {/* Visual System Topology Map */}
       <div
         style={{
-          background: "#F8FAFC",
+          background: isDark ? "#1E293B" : "#F8FAFC",
           borderRadius: 24,
           padding: 32,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
-          border: "1.5px solid #E2E8F0",
+          boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 30px rgba(0,0,0,0.03)",
+          border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
           position: "relative",
           overflow: "hidden",
         }}
@@ -67,201 +71,192 @@ export const OrcheonArchitectureDiagram: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 20, color: "#6366F1" }}>✳</span>
-            <span style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>
               Orcheon Microservice Topology Map
             </span>
           </div>
-          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "#6366F1", background: "rgba(99,102,241,0.1)", padding: "4px 12px", borderRadius: 12 }}>
+          <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "#6366F1", background: "rgba(99,102,241,0.15)", padding: "4px 12px", borderRadius: 12 }}>
             Click any layer node to inspect internals
           </span>
         </div>
 
         {/* Nodes Grid Layout */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, position: "relative", zIndex: 10 }}>
-          {/* Layer 1: Next.js Frontend */}
+          {/* Node 1: Web Client */}
           <div
             onClick={() => setActiveNode("frontend")}
             style={{
-              background: activeNode === "frontend" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "frontend" ? "2px solid #6366F1" : "1.5px solid #E2E8F0",
+              background: activeNode === "frontend" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "frontend" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "frontend" ? "0 6px 20px rgba(99,102,241,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
             <div style={{ fontSize: 11, fontWeight: 800, color: "#6366F1", textTransform: "uppercase", marginBottom: 6 }}>
               Layer 1 • Web Client (:3000)
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              Next.js 14 Workbench
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Flight Recorder UI & Interactive Modals</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>Next.js 14 Workbench</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Flight Recorder UI & Interactive Modals</div>
           </div>
 
-          {/* Layer 2: Python Planner */}
+          {/* Node 2: Planner & FSM */}
           <div
             onClick={() => setActiveNode("planner")}
             style={{
-              background: activeNode === "planner" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "planner" ? "2px solid #6366F1" : "1.5px solid #E2E8F0",
+              background: activeNode === "planner" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "planner" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "planner" ? "0 6px 20px rgba(99,102,241,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#0284C7", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#3B82F6", textTransform: "uppercase", marginBottom: 6 }}>
               Layer 2 • Brain & FSM (:8000)
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              Python FastAPI Planner
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Explicit 6-State Machine & Multi-LLM</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>Python FastAPI Planner</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Explicit 6-State Machine & Multi-LLM</div>
           </div>
 
-          {/* Layer 3: Rust Solver */}
+          {/* Node 3: Policy Core */}
           <div
             onClick={() => setActiveNode("solver")}
             style={{
-              background: activeNode === "solver" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "solver" ? "2px solid #F59E0B" : "1.5px solid #E2E8F0",
+              background: activeNode === "solver" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "solver" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "solver" ? "0 6px 20px rgba(245,158,11,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#D97706", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#F59E0B", textTransform: "uppercase", marginBottom: 6 }}>
               Layer 3 • Policy Core (:8090)
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              Rust Solver & Policy Engine
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Budget Guardrails & Multi-Objective Ranking</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>Rust Solver & Policy Engine</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Budget Guardrails & Multi-Objective Ranking</div>
           </div>
 
-          {/* Layer 4: Go Tool Gateway */}
+          {/* Node 4: Tool Hub */}
           <div
             onClick={() => setActiveNode("gateway")}
             style={{
-              background: activeNode === "gateway" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "gateway" ? "2px solid #10B981" : "1.5px solid #E2E8F0",
+              background: activeNode === "gateway" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "gateway" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "gateway" ? "0 6px 20px rgba(16,185,129,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#059669", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#10B981", textTransform: "uppercase", marginBottom: 6 }}>
               Layer 4 • Tool Hub (:8080)
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              Go MCP Tool Gateway
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Goroutine Fan-out & MCP Server</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>Go MCP Tool Gateway</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Goroutine Fan-out & MCP Server</div>
           </div>
 
-          {/* Layer 5: PostgreSQL Database */}
+          {/* Node 5: Persistence */}
           <div
             onClick={() => setActiveNode("postgres")}
             style={{
-              background: activeNode === "postgres" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "postgres" ? "2px solid #8B5CF6" : "1.5px solid #E2E8F0",
+              background: activeNode === "postgres" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "postgres" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "postgres" ? "0 6px 20px rgba(139,92,246,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#7C3AED", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#8B5CF6", textTransform: "uppercase", marginBottom: 6 }}>
               Layer 5 • Persistence (:5432)
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              PostgreSQL Database
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Structured Audit & Decision Log Storage</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>PostgreSQL Database</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Structured Audit & Decision Log Storage</div>
           </div>
 
-          {/* Layer 6: Live APIs */}
+          {/* Node 6: External Live APIs */}
           <div
             onClick={() => setActiveNode("apis")}
             style={{
-              background: activeNode === "apis" ? "#FFFFFF" : "#F1F5F9",
-              border: activeNode === "apis" ? "2px solid #EC4899" : "1.5px solid #E2E8F0",
+              background: activeNode === "apis" ? (isDark ? "rgba(99,102,241,0.25)" : "rgba(99,102,241,0.06)") : isDark ? "#0F172A" : "#FFFFFF",
+              border: activeNode === "apis" ? "2px solid #6366F1" : isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
               borderRadius: 18,
               padding: 20,
               cursor: "pointer",
-              transition: "all 180ms ease",
-              boxShadow: activeNode === "apis" ? "0 6px 20px rgba(236,72,153,0.15)" : "none",
+              transition: "all 200ms ease",
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#DB2777", textTransform: "uppercase", marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#EC4899", textTransform: "uppercase", marginBottom: 6 }}>
               Live Tools • External APIs
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
-              REST API Ecosystem
-            </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>Open-Meteo, Nager.Date, Frankfurter</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>REST API Ecosystem</div>
+            <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 4 }}>Open-Meteo, Nager.Date, Frankfurter</div>
           </div>
         </div>
       </div>
 
-      {/* Active Node Detail Card */}
-      {nodeDetails[activeNode] && (
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 20,
-            padding: 24,
-            border: "1.5px solid #E2E8F0",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>
+      {/* Selected Node Inspector Detail Card */}
+      <div
+        style={{
+          background: isDark ? "#1E293B" : "#FFFFFF",
+          borderRadius: 24,
+          padding: 28,
+          boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 30px rgba(0,0,0,0.04)",
+          border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>
               {nodeDetails[activeNode].title}
             </h3>
-            <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", background: "#F1F5F9", padding: "4px 10px", borderRadius: 8, color: "#475569" }}>
-              {nodeDetails[activeNode].port}
+            <span style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", fontFamily: "var(--font-mono)" }}>
+              Tech Stack: {nodeDetails[activeNode].tech}
             </span>
           </div>
-
-          <div style={{ fontSize: 13, color: "#64748B" }}>
-            <strong>Tech Stack:</strong> {nodeDetails[activeNode].tech}
-          </div>
-
-          <p style={{ fontSize: 14, color: "#1E293B", margin: 0, lineHeight: 1.6 }}>
-            {nodeDetails[activeNode].desc}
-          </p>
-
-          <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-            {nodeDetails[activeNode].metrics.map((m) => (
-              <span
-                key={m}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: "rgba(99,102,241,0.1)",
-                  color: "#6366F1",
-                  padding: "4px 10px",
-                  borderRadius: 10,
-                }}
-              >
-                ✓ {m}
-              </span>
-            ))}
-          </div>
+          <span
+            style={{
+              fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              background: isDark ? "#0F172A" : "#F8FAFC",
+              border: isDark ? "1px solid #334155" : "1px solid #E2E8F0",
+              padding: "4px 10px",
+              borderRadius: 8,
+              color: isDark ? "#CBD5E1" : "#475569",
+            }}
+          >
+            {nodeDetails[activeNode].port}
+          </span>
         </div>
-      )}
+
+        <p style={{ margin: 0, fontSize: 13.5, color: isDark ? "#CBD5E1" : "#475569", lineHeight: 1.6 }}>
+          {nodeDetails[activeNode].desc}
+        </p>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 4 }}>
+          {nodeDetails[activeNode].metrics.map((m, idx) => (
+            <span
+              key={idx}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#6366F1",
+                background: "rgba(99,102,241,0.12)",
+                padding: "6px 12px",
+                borderRadius: 10,
+              }}
+            >
+              ✓ {m}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

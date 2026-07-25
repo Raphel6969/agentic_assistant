@@ -942,15 +942,15 @@ export default function MaestroWorkbench() {
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                 <div
                   style={{
-                    background: "#FFFFFF",
+                    background: isDark ? "#1E293B" : "#FFFFFF",
                     borderRadius: 24,
                     padding: 22,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
-                    border: "1.5px solid #E2E8F0",
+                    boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.3)" : "0 6px 20px rgba(0,0,0,0.04)",
+                    border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
+                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
                       Recent Task Activity & Bookings
                     </h3>
                     <span style={{ fontSize: 12, color: "#6366F1", fontWeight: 700, cursor: "pointer" }} onClick={() => setNavTab("tasks")}>
@@ -965,8 +965,8 @@ export default function MaestroWorkbench() {
                         key={taskItem.id}
                         onClick={() => handleTaskClickRedirect(taskItem)}
                         style={{
-                          background: "#F8FAFC",
-                          border: "1.5px solid #E2E8F0",
+                          background: isDark ? "#0F172A" : "#F8FAFC",
+                          border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
                           borderRadius: 16,
                           padding: "14px 18px",
                           cursor: "pointer",
@@ -981,16 +981,16 @@ export default function MaestroWorkbench() {
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.borderColor = "#E2E8F0";
+                          e.currentTarget.style.borderColor = isDark ? "#334155" : "#E2E8F0";
                         }}
                       >
                         <div style={{ flex: 1, marginRight: 12 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>
                               {taskItem.title}
                             </span>
                           </div>
-                          <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+                          <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B", marginTop: 2 }}>
                             {taskItem.summaryText || (taskItem.domain === "trip" ? "Air France AF224 $487.00 & Grand Hotel $180 booked via Linked Bank (ACP)" : "Code execution completed successfully.")}
                           </div>
                         </div>
@@ -1000,7 +1000,7 @@ export default function MaestroWorkbench() {
                             fontSize: 12,
                             fontWeight: 700,
                             color: "#6366F1",
-                            background: "rgba(99,102,241,0.1)",
+                            background: "rgba(99,102,241,0.15)",
                             padding: "6px 12px",
                             borderRadius: 12,
                             whiteSpace: "nowrap",
@@ -1018,15 +1018,15 @@ export default function MaestroWorkbench() {
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                 <div
                   style={{
-                    background: "#FFFFFF",
+                    background: isDark ? "#1E293B" : "#FFFFFF",
                     borderRadius: 24,
                     padding: 20,
-                    border: "1.5px solid #E2E8F0",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+                    border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+                    boxShadow: isDark ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 30px rgba(0,0,0,0.04)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", margin: 0 }}>Quick Requests</h4>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", margin: 0 }}>Quick Requests</h4>
                     <span
                       onClick={() => setShowAddTask(true)}
                       style={{ fontSize: 12, color: "#6366F1", fontWeight: 700, cursor: "pointer" }}
@@ -1057,25 +1057,24 @@ export default function MaestroWorkbench() {
                         style={{
                           padding: "12px 14px",
                           borderRadius: 14,
-                          background: "#F8FAFC",
-                          border: "1.5px solid #E2E8F0",
+                          background: isDark ? "#0F172A" : "#F8FAFC",
+                          border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+                          cursor: "pointer",
                           display: "flex",
                           alignItems: "center",
-                          gap: 10,
-                          cursor: "pointer",
+                          justifyContent: "space-between",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: isDark ? "#F8FAFC" : "#0F172A",
                           transition: "all 150ms ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-2px)";
                           e.currentTarget.style.borderColor = "#6366F1";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.borderColor = "#E2E8F0";
+                          e.currentTarget.style.borderColor = isDark ? "#334155" : "#E2E8F0";
                         }}
                       >
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", flex: 1 }}>{r.title}</span>
-                        <span style={{ color: "#6366F1", fontSize: 12 }}>▶</span>
                       </div>
                     ))}
                   </div>
@@ -1101,10 +1100,10 @@ export default function MaestroWorkbench() {
         {/* ── 3. CHAT ASSISTANT TAB ── */}
         {navTab === "chat" && (
           <div style={{ padding: "28px 36px", maxWidth: 960, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", margin: "0 0 6px" }}>
               Orcheon AI Chat Assistant
             </h2>
-            <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 24px" }}>
+            <p style={{ fontSize: 14, color: isDark ? "#94A3B8" : "#64748B", margin: "0 0 24px" }}>
               Ask general questions, check current date/time, request coding advice, or give Orcheon tasks to execute.
             </p>
             <GeneralChatBot
@@ -1128,10 +1127,10 @@ export default function MaestroWorkbench() {
         {/* ── 4. TOOLS TAB ── */}
         {navTab === "tools" && (
           <div style={{ padding: "28px 36px" }}>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-              Maestro Tools
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", margin: "0 0 6px" }}>
+              Orcheon Tools
             </h2>
-            <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 28px" }}>
+            <p style={{ fontSize: 14, color: isDark ? "#94A3B8" : "#64748B", margin: "0 0 28px" }}>
               Select a specialized tool below to configure your parameters and launch an autonomous task!
             </p>
 
@@ -1145,27 +1144,27 @@ export default function MaestroWorkbench() {
             >
               {[
                 {
+                  toolType: "flight" as const,
                   title: "Flight Ticket Search",
                   desc: "Search & compare flight tickets between origin and destination with direct ACP bank booking.",
-                  toolType: "flight" as const,
                   color: "#3B82F6",
                 },
                 {
+                  toolType: "full_trip" as const,
                   title: "Full Trip & Hotel Planner",
                   desc: "Plan a complete trip including flight tickets AND hotel reservations for your stay.",
-                  toolType: "full_trip" as const,
                   color: "#8B5CF6",
                 },
                 {
+                  toolType: "coding" as const,
                   title: "Code Runner",
                   desc: "Specify code requirements in Python or JS for real-time REPL execution.",
-                  toolType: "coding" as const,
                   color: "#10B981",
                 },
                 {
+                  toolType: "scheduling" as const,
                   title: "Scheduler",
                   desc: "Set meeting title, participants, and date/time slot to check calendar availability.",
-                  toolType: "scheduling" as const,
                   color: "#F59E0B",
                 },
               ].map((tool) => (
@@ -1173,11 +1172,11 @@ export default function MaestroWorkbench() {
                   key={tool.title}
                   onClick={() => openToolModal(tool.toolType, tool.title, "")}
                   style={{
-                    background: "#FFFFFF",
+                    background: isDark ? "#1E293B" : "#FFFFFF",
                     borderRadius: 20,
                     padding: 26,
-                    border: "1.5px solid #E2E8F0",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.04)",
+                    border: isDark ? "1.5px solid #334155" : "1.5px solid #E2E8F0",
+                    boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.3)" : "0 8px 24px rgba(0,0,0,0.04)",
                     cursor: "pointer",
                     transition: "transform 200ms ease, border-color 200ms ease",
                   }}
@@ -1187,13 +1186,13 @@ export default function MaestroWorkbench() {
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = "#E2E8F0";
+                    e.currentTarget.style.borderColor = isDark ? "#334155" : "#E2E8F0";
                   }}
                 >
-                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A", margin: "0 0 6px" }}>
                     {tool.title}
                   </h3>
-                  <p style={{ fontSize: 13, color: "#64748B", margin: 0, lineHeight: 1.5 }}>{tool.desc}</p>
+                  <p style={{ fontSize: 13, color: isDark ? "#94A3B8" : "#64748B", margin: 0, lineHeight: 1.5 }}>{tool.desc}</p>
                   <div
                     style={{
                       marginTop: 18,
