@@ -114,7 +114,7 @@ async def safe_chat_completion(
     messages: List[Dict[str, str]],
     temperature: float = 0.2,
     response_format: Optional[Dict[str, str]] = None,
-    use_fast_model: boolean = False,
+    use_fast_model: bool = False,
 ) -> Optional[str]:
     """Execute LLM chat completion with automatic failover between providers on 429 rate limit or quota error."""
     providers = get_llm_clients()
