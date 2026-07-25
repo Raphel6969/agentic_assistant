@@ -2,6 +2,8 @@
 
 > An enterprise-grade autonomous AI workspace assistant that decomposes high-level instructions into explicit 6-State FSM sub-tasks, routes intent via a **Dual-Engine Intent Classifier**, enforces hard budget ceilings using a **Rust Policy Solver**, fan-outs tool execution across a **Go MCP Gateway**, and presents full step-by-step control via a **Human-in-the-Loop Plan Inspector**.
 
+🌐 **Live Deployed Web Workbench**: [https://orcheon-ai.onrender.com/](https://orcheon-ai.onrender.com/)
+
 ---
 
 ## 🚀 Key Features & Differentiators
