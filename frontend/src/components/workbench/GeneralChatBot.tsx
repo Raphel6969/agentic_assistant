@@ -23,7 +23,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
   const defaultInitial: ChatMessage[] = [
     {
       role: "ai",
-      text: "Hello! I'm Maestro General AI. Ask me anything — general questions, coding advice, dates, info, or ask me to plan a task!",
+      text: "Hello! I'm Orcheon AI Assistant. Ask me anything — general questions, coding advice, dates, info, or ask me to plan a task!",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ];
@@ -71,37 +71,37 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       }
       // Greetings
       else if (["hi", "hello", "hey", "sup", "greetings", "howdy"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!"))) {
-        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? 😊 Feel free to ask me any question or give me a task to execute!";
+        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? Feel free to ask me any question or give me a task to execute!";
       }
       // Planning task triggers
       else if (lower.includes("plan") || lower.includes("book") || lower.includes("trip") || lower.includes("flight")) {
-        replyText = "Starting your trip planning task now! 🚀 Check the output in your Tasks panel.";
+        replyText = "Starting your trip planning task now! Check the output in your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "trip";
         taskBudget = 600;
       }
       else if (lower.includes("write code") || lower.includes("python") || lower.includes("script") || lower.includes("for loop") || lower.includes("fibonacci")) {
-        replyText = "Generating and executing your code task now! 💻 Check the output in your Tasks panel.";
+        replyText = "Generating and executing your code task now! Check the output in your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "coding";
       }
       else if (lower.includes("schedule") || lower.includes("calendar") || lower.includes("meeting")) {
-        replyText = "Checking calendar slots and drafting invite for your task now! 📅 Check your Tasks panel.";
+        replyText = "Checking calendar slots and drafting invite for your task now! Check your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "scheduling";
       }
       else if (lower.includes("compare") || lower.includes("price") || lower.includes("research")) {
-        replyText = "Researching vendor pricing and currency rates for your task now! 🔍 Check your Tasks panel.";
+        replyText = "Researching vendor pricing and currency rates for your task now! Check your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "research";
       }
       // Who are you / about
-      else if (lower.includes("who are you") || lower.includes("what is maestro") || lower.includes("what can you do")) {
-        replyText = "I'm Maestro — an advanced agentic AI workspace assistant! I can answer general questions, generate real Python code, plan travel itineraries with live API scores, schedule calendar meetings, and compare product prices across vendors.";
+      else if (lower.includes("who are you") || lower.includes("what is orcheon") || lower.includes("what is maestro") || lower.includes("what can you do")) {
+        replyText = "I'm Orcheon — an advanced agentic AI workspace assistant! I can answer general questions, generate real Python code, plan travel itineraries with live API scores, schedule calendar meetings, and compare product prices across vendors.";
       }
       // General question fallback
       else {
-        replyText = `I understand you're asking about "${text}". As your Maestro AI assistant, I can answer general queries or run autonomous background agentic tasks for you anytime!`;
+        replyText = `I understand you're asking about "${text}". As your Orcheon AI assistant, I can answer general queries or run autonomous background agentic tasks for you anytime!`;
       }
 
       const aiMsg: ChatMessage = {
@@ -131,18 +131,20 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       style={{
         background: "#FFFFFF",
         borderRadius: 24,
-        border: "1px solid rgba(0, 0, 0, 0.08)",
+        border: "1.5px solid #E2E8F0",
         boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
         display: "flex",
         flexDirection: "column",
         height: 520,
         overflow: "hidden",
+        fontFamily: "var(--font-sans), sans-serif",
       }}
     >
       {/* Bot Header */}
       <div
         style={{
-          background: "linear-gradient(135deg, #0F172A, #1E293B)",
+          background: "#FFFFFF",
+          borderBottom: "1.5px solid #E2E8F0",
           padding: "16px 24px",
           display: "flex",
           alignItems: "center",
@@ -154,20 +156,21 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
             width: 36,
             height: 36,
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #6366F1, #3B82F6)",
+            background: "linear-gradient(135deg, #6366F1, #4F46E5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "#FFFFFF",
-            fontSize: 18,
-            fontWeight: 800,
+            boxShadow: "0 2px 8px rgba(99,102,241,0.3)",
           }}
         >
-          🤖
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
         </div>
         <div>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>Maestro General AI Chatbot</h3>
-          <span style={{ fontSize: 11, color: "#94A3B8" }}>Persistent session chat — answers questions, date & runs tasks</span>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Orcheon AI Assistant</h3>
+          <span style={{ fontSize: 11, color: "#64748B" }}>Persistent session chat — answers questions, date & runs tasks</span>
         </div>
       </div>
 
@@ -200,7 +203,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
                 fontSize: 13,
                 lineHeight: 1.5,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                border: m.role === "ai" ? "1px solid #E2E8F0" : "none",
+                border: m.role === "ai" ? "1.5px solid #E2E8F0" : "none",
               }}
             >
               {m.text}
@@ -212,7 +215,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
         ))}
         {isThinking && (
           <div style={{ alignSelf: "flex-start", fontSize: 12, color: "#64748B", fontStyle: "italic" }}>
-            Maestro AI is thinking...
+            Orcheon AI is thinking...
           </div>
         )}
       </div>
@@ -222,7 +225,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
         style={{
           padding: "14px 20px",
           background: "#FFFFFF",
-          borderTop: "1px solid #E2E8F0",
+          borderTop: "1.5px solid #E2E8F0",
           display: "flex",
           gap: 10,
         }}
