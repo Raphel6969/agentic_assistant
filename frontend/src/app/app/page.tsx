@@ -220,17 +220,15 @@ function DedicatedTasksPanel({
 
             {/* Render per-task AssistantMessageCard explicitly bound to selectedTask */}
             <AssistantMessageCard
-              task={
-                selectedTask.taskObj || {
-                  task_id: selectedTask.id,
-                  status: "running",
-                  domain: selectedTask.domain,
-                  description: selectedTask.title,
-                  budget_ceiling: selectedTask.budget,
-                  budget_spent: 0,
-                  created_at: selectedTask.created_at,
-                }
-              }
+              task={{
+                task_id: selectedTask.task_id || selectedTask.id,
+                status: "running",
+                domain: selectedTask.domain,
+                description: selectedTask.title,
+                budget_ceiling: selectedTask.budget,
+                budget_spent: 0,
+                created_at: selectedTask.created_at,
+              }}
               events={selectedTask.events || []}
               onOpenACPBankModal={onOpenACPBankModal}
               onSelectEvent={onSelectEvent}
@@ -280,8 +278,8 @@ function AddTaskModal({
 
   const aiGenerate = () => {
     const presets: Record<string, { title: string; budget: number }> = {
-      trip: { title: "Plan a trip from NYC to Tokyo on 2026-09-15 under $1200", budget: 1200 },
-      coding: { title: "Write a Python script for Fibonacci & sorting algorithm", budget: 0 },
+      trip: { title: "Plan a trip from BOM to PAR on 2026-09-15 under $800", budget: 800 },
+      coding: { title: "Write a Python script for Fibonacci sequence & sorting algorithm", budget: 0 },
       scheduling: { title: "Schedule team strategy sync for next week", budget: 0 },
       research: { title: "Compare MacBook Air M3 vs Dell XPS 15", budget: 0 },
       general: { title: "Complete Q3 project milestones", budget: 100 },
@@ -476,7 +474,7 @@ export default function MaestroWorkbench() {
 
   const userName = user?.name || "Marco";
 
-  // Sync currentTask and events into selectedTask's local item object
+  // Sync currentTask and events strictly into the selectedTask local item object
   useEffect(() => {
     if (currentTask && selectedTask) {
       setTasks((prev) =>
@@ -492,14 +490,14 @@ export default function MaestroWorkbench() {
         )
       );
       setSelectedTask((prev) =>
-        prev
+        prev && prev.id === selectedTask.id
           ? {
               ...prev,
               task_id: currentTask.task_id,
               taskObj: currentTask,
               events: events,
             }
-          : null
+          : prev
       );
     }
   }, [currentTask, events]);
@@ -521,7 +519,7 @@ export default function MaestroWorkbench() {
   };
 
   // Launch interactive tool parameter modal
-  const openToolModal = (toolType: "trip" | "coding" | "scheduling", title: string, emoji: string) => {
+  const openToolModal = (toolType: "flight" | "full_trip" | "coding" | "scheduling", title: string, emoji: string) => {
     setActiveToolModal({ toolType, title, emoji });
   };
 
@@ -910,7 +908,7 @@ export default function MaestroWorkbench() {
                           padding: "12px 14px",
                           borderRadius: 14,
                           background: "#F8FAFC",
-                          border: "1px solid #E2E8F0",
+                          border: "1.5px solid #E2E8F0",
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
@@ -985,36 +983,43 @@ export default function MaestroWorkbench() {
               🛠️ Maestro Tools
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 28px" }}>
-              Click any tool card below to customize your parameters and launch a new autonomous task instantly!
+              Select a specialized tool below to configure your parameters and launch an autonomous task!
             </p>
 
             {/* Tool Bento Cards */}
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
                 gap: 24,
               }}
             >
               {[
                 {
-                  title: "Trip Planner",
+                  title: "Flight Ticket Search",
                   emoji: "✈️",
-                  desc: "Configure your origin, destination, travel dates, and budget to find scored flight options.",
-                  toolType: "trip" as const,
+                  desc: "Search & compare flight tickets between origin and destination with direct ACP bank booking.",
+                  toolType: "flight" as const,
                   color: "#3B82F6",
+                },
+                {
+                  title: "Full Trip & Hotel Planner",
+                  emoji: "🏨",
+                  desc: "Plan a complete trip including flight tickets AND hotel reservations for your stay.",
+                  toolType: "full_trip" as const,
+                  color: "#8B5CF6",
                 },
                 {
                   title: "Code Runner",
                   emoji: "💻",
-                  desc: "Specify code requirements in Python or JS for real-time execution.",
+                  desc: "Specify code requirements in Python or JS for real-time REPL execution.",
                   toolType: "coding" as const,
                   color: "#10B981",
                 },
                 {
                   title: "Scheduler",
                   emoji: "📅",
-                  desc: "Set meeting title, participants, and date/time slot to check availability.",
+                  desc: "Set meeting title, participants, and date/time slot to check calendar availability.",
                   toolType: "scheduling" as const,
                   color: "#F59E0B",
                 },

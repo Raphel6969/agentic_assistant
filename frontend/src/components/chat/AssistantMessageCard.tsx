@@ -23,7 +23,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Strict domain detection: coding vs trip vs general
+  // Strict domain detection: coding vs flight vs full_trip
   const textLower = String(task.description || "").toLowerCase();
   const isCodingTask =
     task.domain === "coding" ||
@@ -46,6 +46,8 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       textLower.includes("tokyo") ||
       textLower.includes("bom"));
 
+  const isFullTrip = isTripTask && (textLower.includes("hotel") || textLower.includes("full") || textLower.includes("stay"));
+
   // Find tool calls and final summary
   const toolCalls = events.filter((e) => e.type === "tool_call");
   const flightEvent = toolCalls.find((e) => e.tool === "search_flights");
@@ -63,7 +65,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   const destCode =
     (flightEvent?.input?.destination as string) ||
     (flightEvent?.output?.flights as any[])?.[0]?.destination ||
-    "CDG";
+    "PAR";
 
   // Speak AI response out loud using Web Speech API
   const handleSpeak = () => {
@@ -402,6 +404,116 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   Book on Lufthansa.com ↗
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DYNAMIC CARD 3: Hotel Reservations (ONLY for Full Trip Planner Mock!) */}
+      {isFullTrip && (
+        <div
+          style={{
+            background: "#F8FAFC",
+            border: "1.5px solid #E2E8F0",
+            borderRadius: 20,
+            padding: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
+              🏨 Recommended Hotel Reservations ({destCode})
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#8B5CF6", background: "#F3E8FF", padding: "3px 10px", borderRadius: 12 }}>
+              Verified Stays ✓
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {/* Grand Hotel */}
+            <div
+              style={{
+                padding: 16,
+                borderRadius: 16,
+                border: "2px solid #8B5CF6",
+                background: "#FFFFFF",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                boxShadow: "0 4px 12px rgba(139,92,246,0.08)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#8B5CF6", padding: "3px 8px", borderRadius: 6 }}>
+                  👑 LUXURY STAY
+                </span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "#8B5CF6", fontFamily: "var(--font-mono)" }}>
+                  $180/night
+                </span>
+              </div>
+              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Grand Hotel Central</div>
+              <div style={{ fontSize: 12, color: "#64748B" }}>City Center · 4.8 ★ (Complimentary Breakfast)</div>
+
+              <button
+                onClick={() => onOpenACPBankModal(`Grand Hotel Reservation (${destCode})`, 180.0)}
+                style={{
+                  marginTop: 6,
+                  background: "#8B5CF6",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                💳 Reserve Hotel Room (ACP)
+              </button>
+            </div>
+
+            {/* Boutique Stay */}
+            <div
+              style={{
+                padding: 16,
+                borderRadius: 16,
+                border: "2px solid #F59E0B",
+                background: "#FFFFFF",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                boxShadow: "0 4px 12px rgba(245,158,11,0.08)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#F59E0B", padding: "3px 8px", borderRadius: 6 }}>
+                  🌿 BEST VALUE
+                </span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "#F59E0B", fontFamily: "var(--font-mono)" }}>
+                  $140/night
+                </span>
+              </div>
+              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Boutique City Suites</div>
+              <div style={{ fontSize: 12, color: "#64748B" }}>Near Metro · 4.6 ★ (Free Cancellation)</div>
+
+              <button
+                onClick={() => onOpenACPBankModal(`Boutique City Suites (${destCode})`, 140.0)}
+                style={{
+                  marginTop: 6,
+                  background: "#F59E0B",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                💳 Reserve Hotel Room (ACP)
+              </button>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import type { Domain } from "@/lib/types";
 
 export interface ToolModalConfig {
-  toolType: "trip" | "coding" | "scheduling" | "voice";
+  toolType: "flight" | "full_trip" | "coding" | "scheduling";
   title: string;
   emoji: string;
 }
@@ -20,7 +20,7 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
   onClose,
   onSubmitTask,
 }) => {
-  // Trip fields
+  // Flight & Trip fields
   const [origin, setOrigin] = useState("BOM");
   const [destination, setDestination] = useState("PAR");
   const [travelDate, setTravelDate] = useState("2026-09-15");
@@ -39,8 +39,11 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (config.toolType === "trip") {
-      const prompt = `Plan a trip from ${origin.trim()} to ${destination.trim()} on ${travelDate} under $${tripBudget}`;
+    if (config.toolType === "flight") {
+      const prompt = `Search flight tickets from ${origin.trim()} to ${destination.trim()} on ${travelDate} under $${tripBudget}`;
+      onSubmitTask(prompt, "trip", Number(tripBudget) || 800);
+    } else if (config.toolType === "full_trip") {
+      const prompt = `Plan a full trip with flight tickets and hotel stay from ${origin.trim()} to ${destination.trim()} on ${travelDate} under $${tripBudget}`;
       onSubmitTask(prompt, "trip", Number(tripBudget) || 800);
     } else if (config.toolType === "coding") {
       const prompt = `Write ${codeLanguage} code for: ${codePrompt.trim()}`;
@@ -108,8 +111,8 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Trip Planner Form */}
-          {config.toolType === "trip" && (
+          {/* Flight Ticket Search Form */}
+          {config.toolType === "flight" && (
             <>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
@@ -160,7 +163,7 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
-                    Travel Date
+                    Flight Date
                   </label>
                   <input
                     type="date"
@@ -181,13 +184,109 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
 
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
-                    Max Budget ($)
+                    Max Price ($)
                   </label>
                   <input
                     type="number"
                     value={tripBudget}
                     onChange={(e) => setTripBudget(e.target.value)}
                     min={50}
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid #E2E8F0",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#0F172A",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Full Trip & Hotel Planner Form */}
+          {config.toolType === "full_trip" && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
+                    Origin (City/IATA)
+                  </label>
+                  <input
+                    type="text"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    placeholder="e.g. NYC, BOM, DEL"
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid #E2E8F0",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#0F172A",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
+                    Destination (City/IATA)
+                  </label>
+                  <input
+                    type="text"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="e.g. PAR, TYO, LON"
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid #E2E8F0",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#0F172A",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={travelDate}
+                    onChange={(e) => setTravelDate(e.target.value)}
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid #E2E8F0",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#0F172A",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
+                    Total Trip Budget ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={tripBudget}
+                    onChange={(e) => setTripBudget(e.target.value)}
+                    min={100}
                     style={{
                       width: "100%",
                       border: "1.5px solid #E2E8F0",
