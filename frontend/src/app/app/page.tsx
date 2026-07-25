@@ -12,6 +12,7 @@ import { EventDetailPanel } from "@/components/trace/EventDetailPanel";
 import { ShimmerButton } from "@/components/magicui/ShimmerButton";
 import { NumberTicker } from "@/components/magicui/NumberTicker";
 import { GeneralChatBot, type ChatMessage } from "@/components/workbench/GeneralChatBot";
+import { ToolParameterModal, type ToolModalConfig } from "@/components/workbench/ToolParameterModal";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavTab = "dashboard" | "tasks" | "chat" | "tools" | "config";
@@ -279,8 +280,8 @@ function AddTaskModal({
 
   const aiGenerate = () => {
     const presets: Record<string, { title: string; budget: number }> = {
-      trip: { title: "Plan a 3-day trip to Tokyo 🗼", budget: 800 },
-      coding: { title: "Write a Python script for Fibonacci & sorting", budget: 0 },
+      trip: { title: "Plan a trip from NYC to Tokyo on 2026-09-15 under $1200", budget: 1200 },
+      coding: { title: "Write a Python script for Fibonacci & sorting algorithm", budget: 0 },
       scheduling: { title: "Schedule team strategy sync for next week", budget: 0 },
       research: { title: "Compare MacBook Air M3 vs Dell XPS 15", budget: 0 },
       general: { title: "Complete Q3 project milestones", budget: 100 },
@@ -461,6 +462,7 @@ export default function MaestroWorkbench() {
   const [navTab, setNavTab] = useState<NavTab>("dashboard");
   const [showSettings, setShowSettings] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [activeToolModal, setActiveToolModal] = useState<ToolModalConfig | null>(null);
   const [selectedTask, setSelectedTask] = useState<LocalTaskItem | null>(null);
   const [tasks, setTasks] = useState<LocalTaskItem[]>([]);
   const [persistentChatMessages, setPersistentChatMessages] = useState<ChatMessage[]>([]);
@@ -518,20 +520,9 @@ export default function MaestroWorkbench() {
     setNavTab("tasks");
   };
 
-  // Launch a tool directly from Tools Bento Grid
-  const handleToolClick = (toolTitle: string, domain: Domain, sampleDesc: string, defaultBudget: number = 0) => {
-    const newTask: LocalTaskItem = {
-      id: crypto.randomUUID(),
-      title: sampleDesc,
-      domain,
-      status: "running",
-      budget: defaultBudget,
-      created_at: new Date().toISOString(),
-    };
-    setTasks((prev) => [newTask, ...prev]);
-    setSelectedTask(newTask);
-    handleStartTask(sampleDesc, domain, defaultBudget);
-    setNavTab("tasks");
+  // Launch interactive tool parameter modal
+  const openToolModal = (toolType: "trip" | "coding" | "scheduling", title: string, emoji: string) => {
+    setActiveToolModal({ toolType, title, emoji });
   };
 
   return (
@@ -994,7 +985,7 @@ export default function MaestroWorkbench() {
               🛠️ Maestro Tools
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 28px" }}>
-              Click any tool card below to launch a new autonomous task instantly in your Tasks tab!
+              Click any tool card below to customize your parameters and launch a new autonomous task instantly!
             </p>
 
             {/* Tool Bento Cards */}
@@ -1007,42 +998,30 @@ export default function MaestroWorkbench() {
             >
               {[
                 {
-                  title: "Voice Input",
-                  emoji: "🎤",
-                  desc: "Speak directly to Maestro. Converts speech to autonomous task execution.",
-                  domain: "coding" as Domain,
-                  sampleDesc: "Voice task: Write a Python script to sort items",
-                  color: "#6366F1",
+                  title: "Trip Planner",
+                  emoji: "✈️",
+                  desc: "Configure your origin, destination, travel dates, and budget to find scored flight options.",
+                  toolType: "trip" as const,
+                  color: "#3B82F6",
                 },
                 {
                   title: "Code Runner",
                   emoji: "💻",
-                  desc: "Generate, run, and debug Python code snippets in real-time.",
-                  domain: "coding" as Domain,
-                  sampleDesc: "Write Python code for Fibonacci & sorting algorithm",
+                  desc: "Specify code requirements in Python or JS for real-time execution.",
+                  toolType: "coding" as const,
                   color: "#10B981",
-                },
-                {
-                  title: "Trip Planner",
-                  emoji: "✈️",
-                  desc: "Find flights, hotels, and live weather for any destination.",
-                  domain: "trip" as Domain,
-                  sampleDesc: "Plan a 3-day trip to Tokyo under $800",
-                  defaultBudget: 800,
-                  color: "#3B82F6",
                 },
                 {
                   title: "Scheduler",
                   emoji: "📅",
-                  desc: "Check calendar slots, draft invites, and coordinate team syncs.",
-                  domain: "scheduling" as Domain,
-                  sampleDesc: "Check calendar availability for team strategy sync",
+                  desc: "Set meeting title, participants, and date/time slot to check availability.",
+                  toolType: "scheduling" as const,
                   color: "#F59E0B",
                 },
               ].map((tool) => (
                 <div
                   key={tool.title}
-                  onClick={() => handleToolClick(tool.title, tool.domain, tool.sampleDesc, tool.defaultBudget || 0)}
+                  onClick={() => openToolModal(tool.toolType, tool.title, tool.emoji)}
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 20,
@@ -1078,7 +1057,7 @@ export default function MaestroWorkbench() {
                       fontWeight: 800,
                     }}
                   >
-                    Click to Launch Task →
+                    Configure & Launch →
                   </div>
                 </div>
               ))}
@@ -1107,6 +1086,23 @@ export default function MaestroWorkbench() {
           </div>
         )}
       </div>
+
+      {/* Interactive Tool Parameter Modal */}
+      <ToolParameterModal
+        config={activeToolModal}
+        onClose={() => setActiveToolModal(null)}
+        onSubmitTask={(prompt, dom, bdg) => {
+          const newTask: LocalTaskItem = {
+            id: crypto.randomUUID(),
+            title: prompt,
+            domain: dom,
+            status: "running",
+            budget: bdg,
+            created_at: new Date().toISOString(),
+          };
+          handleAddTask(newTask);
+        }}
+      />
 
       {/* Add Task Modal */}
       <AddTaskModal

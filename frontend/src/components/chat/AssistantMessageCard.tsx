@@ -54,6 +54,17 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
   const lastPlanEvent = [...events].reverse().find((e) => e.type === "plan_step" && e.reasoning);
   const friendlySummary: string = typeof lastPlanEvent?.reasoning === "string" ? lastPlanEvent.reasoning : `Completed task: ${task.description}`;
 
+  // Dynamically extract origin & destination from flight input or flight results
+  const originCode =
+    (flightEvent?.input?.origin as string) ||
+    (flightEvent?.output?.flights as any[])?.[0]?.origin ||
+    "BOM";
+
+  const destCode =
+    (flightEvent?.input?.destination as string) ||
+    (flightEvent?.output?.flights as any[])?.[0]?.destination ||
+    "CDG";
+
   // Speak AI response out loud using Web Speech API
   const handleSpeak = () => {
     if ("speechSynthesis" in window) {
@@ -75,7 +86,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  // Generate fallback Python code if code event output isn't streamed yet
+  // Generate Python code snippet
   const getPythonSnippet = () => {
     if (codeEvent?.output) {
       return String(codeEvent.output.stdout || codeEvent.output.code_executed || codeEvent.output.code || "");
@@ -103,7 +114,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       );
     }
     return (
-      `# Python solution for task: ${task.description}\n` +
+      `# Python solution for: ${task.description}\n` +
       "def solve():\n" +
       "    print('Executing code task...')\n" +
       "    result = [x * 2 for x in range(5)]\n" +
@@ -254,7 +265,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         </div>
       )}
 
-      {/* DYNAMIC CARD 2: Flight Options (ONLY rendered for Trip tasks!) */}
+      {/* DYNAMIC CARD 2: Flight Options (Dynamic Origin → Destination Header!) */}
       {isTripTask && (
         <div
           style={{
@@ -269,7 +280,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-              ✈️ Available Flight Options (BOM → CDG Paris)
+              ✈️ Available Flight Options ({originCode} → {destCode})
             </span>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "#D1FAE5", padding: "3px 10px", borderRadius: 12 }}>
               Rust Solver Scored ✓
@@ -303,7 +314,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
-                  onClick={() => onOpenACPBankModal("Air France Direct Flight AF224 (BOM -> CDG)", 487.0)}
+                  onClick={() => onOpenACPBankModal(`Air France Flight AF224 (${originCode} -> ${destCode})`, 487.0)}
                   style={{
                     background: "#6366F1",
                     color: "#FFFFFF",
@@ -361,7 +372,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
-                  onClick={() => onOpenACPBankModal("Lufthansa Flight LH755 (BOM -> CDG)", 440.0)}
+                  onClick={() => onOpenACPBankModal(`Lufthansa Flight LH755 (${originCode} -> ${destCode})`, 440.0)}
                   style={{
                     background: "#10B981",
                     color: "#FFFFFF",
