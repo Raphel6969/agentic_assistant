@@ -142,12 +142,23 @@ function DedicatedTasksPanel({
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  // Human-in-the-Loop task approval tracking state
+  const [approvedTaskIds, setApprovedTaskIds] = useState<Record<string, boolean>>({});
+
   const domainColor: Record<string, string> = {
     trip: "#3B82F6",
     coding: "#10B981",
     scheduling: "#F59E0B",
     research: "#8B5CF6",
     general: "#64748B",
+  };
+
+  const isApproved = selectedTask ? Boolean(approvedTaskIds[selectedTask.id]) : false;
+
+  const handleApproveSelectedTask = () => {
+    if (selectedTask) {
+      setApprovedTaskIds((prev) => ({ ...prev, [selectedTask.id]: true }));
+    }
   };
 
   return (
@@ -240,8 +251,8 @@ function DedicatedTasksPanel({
                   </span>
                 </div>
                 <div style={{ fontSize: 11, color: isDark ? "#94A3B8" : "#64748B", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
-                  {t.status}
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: approvedTaskIds[t.id] ? "#10B981" : "#F59E0B", display: "inline-block" }} />
+                  {approvedTaskIds[t.id] ? "Executing" : "Awaiting Approval"}
                   {t.budget > 0 && <span>· ${t.budget}</span>}
                 </div>
               </div>
@@ -264,7 +275,10 @@ function DedicatedTasksPanel({
                   <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>{selectedTask.title}</h3>
                 </div>
                 <p style={{ margin: 0, fontSize: 13, color: isDark ? "#94A3B8" : "#64748B" }}>
-                  Domain: <strong style={{ color: isDark ? "#F8FAFC" : "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
+                  Domain: <strong style={{ color: isDark ? "#F8FAFC" : "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status:{" "}
+                  <span style={{ color: isApproved ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
+                    {isApproved ? "Executing ✓" : "Awaiting Approval 🛡️"}
+                  </span>
                 </p>
               </div>
 
@@ -290,6 +304,7 @@ function DedicatedTasksPanel({
 
             {/* Feature 1: Human-in-the-Loop Plan Inspector */}
             <PlanInspectorBar
+              key={selectedTask.id + "-" + (isApproved ? "approved" : "pending")}
               taskTitle={selectedTask.title}
               domain={selectedTask.domain}
               steps={(function getInspectorSteps() {
@@ -298,64 +313,105 @@ function DedicatedTasksPanel({
 
                 if (d === "trip" || titleLower.includes("flight") || titleLower.includes("trip") || titleLower.includes("hotel")) {
                   return [
-                    { id: 1, description: "Search flights to destination within budget ceiling", tool: "search_flights", status: "pending" as const },
-                    { id: 2, description: "Search centrally located hotel recommendations", tool: "search_hotels", status: "pending" as const },
-                    { id: 3, description: "Fetch 7-day live weather forecast from Open-Meteo REST API", tool: "get_destination_weather", status: "pending" as const },
+                    { id: 1, description: "Search flights to destination within budget ceiling", tool: "search_flights", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 2, description: "Search centrally located hotel recommendations", tool: "search_hotels", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 3, description: "Fetch 7-day live weather forecast from Open-Meteo REST API", tool: "get_destination_weather", status: isApproved ? ("completed" as const) : ("pending" as const) },
                   ];
                 }
 
                 if (d === "coding" || titleLower.includes("code") || titleLower.includes("python") || titleLower.includes("script")) {
                   return [
-                    { id: 1, description: "Generate complete Python code algorithm", tool: "generate_code", status: "pending" as const },
-                    { id: 2, description: "Execute code snippet via Polyglot REPL", tool: "execute_code", status: "pending" as const },
-                    { id: 3, description: "Verify memory & runtime bounds in Rust solver", tool: "policy_check", status: "pending" as const },
+                    { id: 1, description: "Generate complete Python code algorithm", tool: "generate_code", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 2, description: "Execute code snippet via Polyglot REPL", tool: "execute_code", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 3, description: "Verify memory & runtime bounds in Rust solver", tool: "policy_check", status: isApproved ? ("completed" as const) : ("pending" as const) },
                   ];
                 }
 
                 if (d === "scheduling" || titleLower.includes("schedule") || titleLower.includes("meeting") || titleLower.includes("calendar")) {
                   return [
-                    { id: 1, description: "Verify schedule availability via Nager.Date API", tool: "check_calendar_availability", status: "pending" as const },
-                    { id: 2, description: "Draft meeting invite with participants", tool: "draft_invite", status: "pending" as const },
-                    { id: 3, description: "Confirm calendar slot & send confirmations", tool: "confirm_calendar_slot", status: "pending" as const },
+                    { id: 1, description: "Verify schedule availability via Nager.Date API", tool: "check_calendar_availability", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 2, description: "Draft meeting invite with participants", tool: "draft_invite", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 3, description: "Confirm calendar slot & send confirmations", tool: "confirm_calendar_slot", status: isApproved ? ("completed" as const) : ("pending" as const) },
                   ];
                 }
 
                 if (d === "research" || titleLower.includes("compare") || titleLower.includes("price")) {
                   return [
-                    { id: 1, description: "Search product prices across vendors", tool: "search_product_prices", status: "pending" as const },
-                    { id: 2, description: "Calculate live currency exchange rates", tool: "frankfurter_api", status: "pending" as const },
-                    { id: 3, description: "Summarize tradeoffs and best deals", tool: "summarize_tradeoffs", status: "pending" as const },
+                    { id: 1, description: "Search product prices across vendors", tool: "search_product_prices", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 2, description: "Calculate live currency exchange rates", tool: "frankfurter_api", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                    { id: 3, description: "Summarize tradeoffs and best deals", tool: "summarize_tradeoffs", status: isApproved ? ("completed" as const) : ("pending" as const) },
                   ];
                 }
 
                 // General / Conversational intent steps
                 return [
-                  { id: 1, description: "Analyze user prompt intent", tool: "analyze_intent", status: "pending" as const },
-                  { id: 2, description: "Evaluate safety & budget bounds in Rust policy engine", tool: "policy_check", status: "pending" as const },
-                  { id: 3, description: "Synthesize conversational response via LLM Gateway", tool: "synthesize_llm_response", status: "pending" as const },
+                  { id: 1, description: "Analyze user prompt intent", tool: "analyze_intent", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                  { id: 2, description: "Evaluate safety & budget bounds in Rust policy engine", tool: "policy_check", status: isApproved ? ("completed" as const) : ("pending" as const) },
+                  { id: 3, description: "Synthesize conversational response via LLM Gateway", tool: "synthesize_llm_response", status: isApproved ? ("completed" as const) : ("pending" as const) },
                 ];
               })()}
-              onApproveAll={() => {}}
+              onApproveAll={handleApproveSelectedTask}
               onSkipStep={() => {}}
               onEditParameters={() => onAddTaskClick()}
             />
 
-            {/* Render per-task AssistantMessageCard explicitly bound to selectedTask */}
-            <AssistantMessageCard
-              task={{
-                task_id: selectedTask.task_id || selectedTask.id,
-                status: "running",
-                domain: selectedTask.domain,
-                description: selectedTask.title,
-                budget_ceiling: selectedTask.budget,
-                budget_spent: 0,
-                created_at: selectedTask.created_at,
-              }}
-              events={selectedTask.events || []}
-              onOpenACPBankModal={onOpenACPBankModal}
-              onSelectEvent={onSelectEvent}
-              selectedEventId={selectedEventId}
-            />
+            {/* ONLY render AssistantMessageCard AFTER user approves task! */}
+            {isApproved ? (
+              <AssistantMessageCard
+                task={{
+                  task_id: selectedTask.task_id || selectedTask.id,
+                  status: "running",
+                  domain: selectedTask.domain,
+                  description: selectedTask.title,
+                  budget_ceiling: selectedTask.budget,
+                  budget_spent: 0,
+                  created_at: selectedTask.created_at,
+                }}
+                events={selectedTask.events || []}
+                onOpenACPBankModal={onOpenACPBankModal}
+                onSelectEvent={onSelectEvent}
+                selectedEventId={selectedEventId}
+              />
+            ) : (
+              <div
+                style={{
+                  background: isDark ? "#0F172A" : "#F8FAFC",
+                  border: isDark ? "2px dashed #6366F1" : "2px dashed #818CF8",
+                  borderRadius: 20,
+                  padding: 36,
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 14,
+                }}
+              >
+                <div style={{ fontSize: 36 }}>🛡️</div>
+                <h4 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>
+                  Human-in-the-Loop Inspection Required
+                </h4>
+                <p style={{ margin: 0, fontSize: 13.5, color: isDark ? "#94A3B8" : "#64748B", maxWidth: 480, lineHeight: 1.6 }}>
+                  Review the 3 FSM decomposed steps above. Click <strong>&quot;✓ Approve &amp; Execute All&quot;</strong> to grant permissions and execute the tool pipeline for this task.
+                </p>
+                <button
+                  onClick={handleApproveSelectedTask}
+                  style={{
+                    marginTop: 6,
+                    background: "linear-gradient(135deg, #10B981, #059669)",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: 14,
+                    padding: "12px 28px",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    boxShadow: "0 4px 16px rgba(16,185,129,0.35)",
+                  }}
+                >
+                  ✓ Approve &amp; Execute Task Now
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748B", gap: 12 }}>
