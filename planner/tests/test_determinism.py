@@ -51,14 +51,14 @@ async def test_planner_stops_on_guardrail_block():
         domain="trip",
         budget_ceiling=10.0,
     )
-    # Set spent to $9
-    state.budget_spent = 9.0
+    # Set initial spent to $15 so any action exceeds budget ceiling ($15 > $10)
+    state.budget_spent = 15.0
 
     await run_planner_loop(task_id)
 
     updated = get_task_state(task_id)
     assert updated is not None
-    # Planner should fail due to guardrail block on expensive tool
+    # Planner should fail due to guardrail block on over-budget action
     assert updated.status == TaskStatus.FAILED
     assert "Guardrail" in (updated.error or "")
 

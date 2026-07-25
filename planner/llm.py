@@ -95,7 +95,7 @@ async def select_tool_call(
     """
     client = get_llm_client()
     if client:
-        model = os.getenv("FAST_MODEL", "gpt-oss-20b")
+        model = os.getenv("FAST_MODEL", "llama-3.1-8b-instant")
         prompt = (
             f"Select the best tool for this step: '{step_description}'.\n"
             f"Available tools and schemas: {json.dumps(available_tools)}\n"
