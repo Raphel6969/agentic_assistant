@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -42,6 +43,29 @@ func main() {
 			"status":  "ok",
 			"service": "gateway",
 			"phase":   "1-core-loop",
+		})
+	}))
+
+	// Debug failure-injection toggle endpoint for live demo scenario
+	mux.HandleFunc("/debug/fail-tool", withCORS(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var req struct {
+			Tool string `json:"tool"`
+			Fail bool   `json:"fail"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		tools.SetToolFailureMode(req.Tool, req.Fail)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"tool":        req.Tool,
+			"forced_fail": req.Fail,
+			"message":     fmt.Sprintf("Failure mode for '%s' set to %v", req.Tool, req.Fail),
 		})
 	}))
 

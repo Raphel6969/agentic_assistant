@@ -33,6 +33,10 @@ func RegisterFlightsTool(r *Registry) {
 }
 
 func handleSearchFlights(taskID string, input map[string]interface{}) (map[string]interface{}, error) {
+	if IsToolForcedToFail("search_flights") {
+		return nil, fmt.Errorf("Primary flight search API timed out (503 Service Unavailable)")
+	}
+
 	origin, _ := input["origin"].(string)
 	dest, _ := input["destination"].(string)
 

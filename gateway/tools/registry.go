@@ -125,4 +125,5 @@ func (r *Registry) registerDefaults() {
 	RegisterSchedulingTools(r)
 	RegisterACPCheckoutTool(r)
 	RegisterResearchTools(r)
+	RegisterFailureInjectionTools(r)
 }

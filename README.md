@@ -1,57 +1,93 @@
-# [Project Name]
+# Agentic Assistant
 
-> [One-sentence pitch — e.g. "An autonomous personal assistant agent that plans,
-> compares, and executes multi-step tasks across domains — with a visible decision
-> trace and a policy engine that can't be talked out of your budget."]
+> An autonomous personal assistant agent that decomposes high-level instructions into sub-tasks, orchestrates tools across 3 domains (Trip Planning, Scheduling, Price Research), and executes with a replayable decision trace and a mechanically enforced policy engine that can't be talked out of your budget.
 
-[Demo GIF/video link — add before final submission]
+---
 
-## What makes this different
+## Technical Highlights & Differentiators
 
-Most agent demos are single-domain wrappers around an LLM. This one is built to prove
-three things a judge can verify, not just take on faith:
+Most agent demos are single-domain wrappers around an LLM. This project proves three core claims:
 
-1. **A replayable decision trace** — every plan step, tool call, and decision is logged
-   and rendered live, not hidden in a chat log.
-2. **A guardrail that's mechanically enforced, not prompted** — budget and permission
-   limits are checked by a separate Rust service before any action executes.
-3. **Genuine domain generality** — the same planner runs a trip-planning task and a
-   scheduling/coordination task with zero new planner logic, only new registered tools.
+1. **A Replayable Decision Trace (Flight Recorder)** — Every planning step, tool call (input/output/latency/cost), guardrail decision, and confidence score is logged and rendered live via WebSockets.
+2. **Mechanically Enforced Policy Engine (Rust Core)** — Budget ceiling rules and permission tiers (`read_only`, `reversible`, `irreversible`) are checked by a separate Rust service before execution. A model mistake or jailbreak prompt cannot breach the budget ceiling.
+3. **Genuine Domain Generality** — The exact same Python planner state machine executes Trip Planning, Scheduling/Coordination, and Price Research tasks with **zero domain-specific code added to the planner** — only new registered Go Gateway tools.
 
-See `ARCHITECTURE.md` for how, and `DEMO_SCRIPT.md` for the exact demo that proves it.
+---
 
-## Quick start
+## Real vs. Mocked Integrations
 
+| Feature | Type | Source / Protocol |
+|---|---|---|
+| **Destination Weather** | Real Live REST API | [Open-Meteo REST API](https://open-meteo.com) (zero auth) |
+| **Public Holidays** | Real Live REST API | [Nager.Date REST API](https://date.nager.at) (zero auth) |
+| **Currency Exchange** | Real Live REST API | [Frankfurter REST API](https://frankfurter.app) (zero auth) |
+| **Merchant Checkout** | ACP Standard Simulation | Agentic Commerce Protocol (`Checkout` object + `SharedPaymentToken`) |
+| **Flight & Hotel Search** | Seeded Deterministic Mock | Seeded reproducible data for demo reliability |
+
+---
+
+## Quick Start
+
+### 1. Environment Setup
 ```bash
-git clone <repo-url> && cd <repo>
-cp .env.example .env   # add your LLM API key
+cp .env.example .env
+# Fill in GROQ_API_KEY (from https://console.groq.com) or OPENROUTER_API_KEY
+```
+
+### 2. Boot All Services via Docker
+```bash
 docker compose up
 ```
-Then open `http://localhost:3000`. Full setup details in `CONTRIBUTING.md`.
 
-## What's mocked vs. real
+Open `http://localhost:3000` to access the Flight Recorder UI.
 
-- **Mocked, deterministically seeded:** flight/hotel inventory and pricing (kept mocked
-  for demo reliability).
-- **Real:** [fill in — e.g. weather API / calendar integration]
-- **Simulated but standards-modeled:** the checkout/payment step follows the shape of
-  the real Agentic Commerce Protocol (`Checkout` object + scoped token), without moving
-  real money.
+### 3. Ports Map
 
-## Repo map
+| Service | Language / Stack | Port | Endpoint |
+|---|---|---|---|
+| **Frontend** | Next.js 14 / React 18 | `3000` | `http://localhost:3000` |
+| **Planner** | Python / FastAPI | `8000` | `http://localhost:8000` |
+| **Gateway** | Go 1.23 | `8080` | `http://localhost:8080` |
+| **Solver** | Rust 1.79 / Axum | `8090` | `http://localhost:8090` |
+| **Database** | Postgres 16 | `5432` | `postgresql://postgres:postgres@localhost:5432/agent` |
 
-| File | What it's for |
-|---|---|
-| `AGENTS.md` | Orientation for AI coding agents and new contributors |
-| `PHASES.md` | Live build status — what's done, blocked, remaining |
-| `RULES.md` | Engineering rules + the agent's actual runtime policy |
-| `ARCHITECTURE.md` | System diagram, components, trace schema |
-| `CONTRIBUTING.md` | Local setup, branch/PR workflow |
-| `DOCUMENTATION.md` | Index of all docs + standards |
-| `DEMO_SCRIPT.md` | The exact demo run-of-show |
+---
 
-## Team
-[names / roles]
+## Live Failure-Injection & Resilience Demo
 
-## License
-[MIT / other]
+To demonstrate real-time fault recovery during judging:
+
+```bash
+# Trigger failure mode on primary flight search API
+curl -X POST http://localhost:8080/debug/fail-tool -H "Content-Type: application/json" -d '{"tool": "search_flights", "fail": true}'
+```
+
+Watch the Flight Recorder UI:
+1. Primary `search_flights` tool retries 3 times with exponential backoff.
+2. Gateway trips the Circuit Breaker for `search_flights`.
+3. Gateway automatically invokes the registered Fallback Tool (`fallback_flight_cache`).
+4. Trace node marks `fallback_used: true` and continues execution without crashing!
+
+---
+
+## Testing
+
+```bash
+# Python Planner Tests
+cd planner && pytest
+
+# Go Gateway Tests
+cd gateway && go test ./...
+
+# Rust Solver Tests
+cd solver && cargo test
+
+# Frontend TypeScript Type Check
+cd frontend && npm run type-check
+```
+
+---
+
+## Architecture Diagram
+
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for data flow and trace schemas, [PHASES.md](docs/PHASES.md) for phase history, and [DECISIONS.md](DECISIONS.md) for architectural decision records.
