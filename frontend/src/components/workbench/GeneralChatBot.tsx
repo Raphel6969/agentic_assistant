@@ -91,18 +91,16 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       let targetDomain: Domain = "trip";
       let taskBudget = 0;
 
-      if (lower.includes("name") || lower.includes("who are you") || lower.includes("whats ur name")) {
+      if (["hi", "hello", "hey", "sup", "greetings", "howdy", "whatsup", "whats up", "how are u", "how are you", "how are u today", "how are you today"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!") || lower.startsWith(g + "?"))) {
+        replyText = "I'm doing great, thank you! 😊 I'm Orcheon, your AI workspace assistant. How can I help you today?";
+      } else if (lower.includes("name") || lower.includes("who are you") || lower.includes("whats ur name")) {
         replyText = "I'm Orcheon — your intelligent AI workspace assistant! I can help you plan trips, write and run code, schedule meetings, or answer any questions.";
       } else if (lower.includes("do") || lower.includes("can u do") || lower.includes("what can you do") || lower.includes("help")) {
         replyText = "I can execute autonomous background tasks for you — like searching flight tickets & hotels, writing and running Python code, scheduling calendar meetings, or comparing product prices across vendors! What would you like to do?";
-      } else if (lower.includes("date") || lower.includes("day is it") || lower.includes("today")) {
+      } else if (lower.includes("what date") || lower.includes("day is it") || lower.includes("what is the date")) {
         const now = new Date();
         const options: Intl.DateTimeFormatOptions = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
         replyText = `Today is ${now.toLocaleDateString("en-US", options)}.`;
-      } else if (lower.includes("time")) {
-        replyText = `The current local time is ${new Date().toLocaleTimeString()}.`;
-      } else if (["hi", "hello", "hey", "sup", "greetings", "howdy", "whatsup", "whats up"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!"))) {
-        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? 😊 Feel free to ask me any question or give me a task to execute!";
       } else if (lower.includes("plan") || lower.includes("book") || lower.includes("trip") || lower.includes("flight")) {
         replyText = "Starting your trip planning task now! 🚀 Check the output in your Tasks panel.";
         isTaskTrigger = true;

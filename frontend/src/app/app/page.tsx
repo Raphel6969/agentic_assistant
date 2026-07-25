@@ -289,11 +289,49 @@ function DedicatedTasksPanel({
             <PlanInspectorBar
               taskTitle={selectedTask.title}
               domain={selectedTask.domain}
-              steps={[
-                { id: 1, description: selectedTask.domain === "trip" ? "Search flights to destination within budget ceiling" : selectedTask.domain === "coding" ? "Generate complete Python code algorithm" : "Verify schedule availability", tool: selectedTask.domain === "trip" ? "search_flights" : selectedTask.domain === "coding" ? "execute_code" : "check_calendar", status: "pending" },
-                { id: 2, description: selectedTask.domain === "trip" ? "Search centrally located hotel recommendations" : selectedTask.domain === "coding" ? "Execute code snippet via Polyglot REPL" : "Draft event invite", tool: selectedTask.domain === "trip" ? "search_hotels" : selectedTask.domain === "coding" ? "execute_code" : "draft_invite", status: "pending" },
-                { id: 3, description: selectedTask.domain === "trip" ? "Fetch 7-day live weather forecast from Open-Meteo REST API" : selectedTask.domain === "coding" ? "Verify memory and runtime bounds in Rust solver" : "Confirm calendar slot", tool: selectedTask.domain === "trip" ? "get_destination_weather" : "policy_check", status: "pending" },
-              ]}
+              steps={(function getInspectorSteps() {
+                const d = selectedTask.domain;
+                const titleLower = (selectedTask.title || "").toLowerCase();
+
+                if (d === "trip" || titleLower.includes("flight") || titleLower.includes("trip") || titleLower.includes("hotel")) {
+                  return [
+                    { id: 1, description: "Search flights to destination within budget ceiling", tool: "search_flights", status: "pending" as const },
+                    { id: 2, description: "Search centrally located hotel recommendations", tool: "search_hotels", status: "pending" as const },
+                    { id: 3, description: "Fetch 7-day live weather forecast from Open-Meteo REST API", tool: "get_destination_weather", status: "pending" as const },
+                  ];
+                }
+
+                if (d === "coding" || titleLower.includes("code") || titleLower.includes("python") || titleLower.includes("script")) {
+                  return [
+                    { id: 1, description: "Generate complete Python code algorithm", tool: "generate_code", status: "pending" as const },
+                    { id: 2, description: "Execute code snippet via Polyglot REPL", tool: "execute_code", status: "pending" as const },
+                    { id: 3, description: "Verify memory & runtime bounds in Rust solver", tool: "policy_check", status: "pending" as const },
+                  ];
+                }
+
+                if (d === "scheduling" || titleLower.includes("schedule") || titleLower.includes("meeting") || titleLower.includes("calendar")) {
+                  return [
+                    { id: 1, description: "Verify schedule availability via Nager.Date API", tool: "check_calendar_availability", status: "pending" as const },
+                    { id: 2, description: "Draft meeting invite with participants", tool: "draft_invite", status: "pending" as const },
+                    { id: 3, description: "Confirm calendar slot & send confirmations", tool: "confirm_calendar_slot", status: "pending" as const },
+                  ];
+                }
+
+                if (d === "research" || titleLower.includes("compare") || titleLower.includes("price")) {
+                  return [
+                    { id: 1, description: "Search product prices across vendors", tool: "search_product_prices", status: "pending" as const },
+                    { id: 2, description: "Calculate live currency exchange rates", tool: "frankfurter_api", status: "pending" as const },
+                    { id: 3, description: "Summarize tradeoffs and best deals", tool: "summarize_tradeoffs", status: "pending" as const },
+                  ];
+                }
+
+                // General / Conversational intent steps
+                return [
+                  { id: 1, description: "Analyze user prompt intent", tool: "analyze_intent", status: "pending" as const },
+                  { id: 2, description: "Evaluate safety & budget bounds in Rust policy engine", tool: "policy_check", status: "pending" as const },
+                  { id: 3, description: "Synthesize conversational response via LLM Gateway", tool: "synthesize_llm_response", status: "pending" as const },
+                ];
+              })()}
               onApproveAll={() => {}}
               onSkipStep={() => {}}
               onEditParameters={() => onAddTaskClick()}
