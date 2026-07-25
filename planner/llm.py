@@ -68,59 +68,94 @@ def detect_prompt_domain(task_description: str, fallback_domain: str = "general"
     return fallback_domain
 
 
-def get_llm_client(backend: Optional[str] = None) -> Optional[openai.AsyncOpenAI]:
-    # 1. Direct Gemini API support
+def get_llm_clients() -> List[Dict[str, Any]]:
+    """Return an ordered list of configured LLM provider clients with model names."""
+    clients = []
+
+    # 1. Groq (Fastest & high rate limit)
+    groq_key = os.getenv("GROQ_API_KEY")
+    groq_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    if groq_key:
+        clients.append({
+            "provider": "groq",
+            "client": openai.AsyncOpenAI(api_key=groq_key, base_url=groq_url),
+            "model": os.getenv("PLANNER_MODEL", "llama-3.3-70b-versatile"),
+            "fast_model": os.getenv("FAST_MODEL", "llama-3.1-8b-instant"),
+        })
+
+    # 2. Gemini API
     gemini_key = os.getenv("GEMINI_API_KEY")
     if gemini_key:
-        return openai.AsyncOpenAI(
-            api_key=gemini_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-        )
-
-    # 2. Groq
-    selected_backend = backend or os.getenv("LLM_BACKEND", "groq")
-    if selected_backend == "groq":
-        api_key = os.getenv("GROQ_API_KEY")
-        base_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
-        if api_key:
-            return openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+        clients.append({
+            "provider": "gemini",
+            "client": openai.AsyncOpenAI(
+                api_key=gemini_key,
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+            ),
+            "model": "gemini-2.0-flash",
+            "fast_model": "gemini-2.0-flash",
+        })
 
     # 3. OpenRouter fallback
     openrouter_key = os.getenv("OPENROUTER_API_KEY")
     openrouter_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     if openrouter_key:
-        return openai.AsyncOpenAI(api_key=openrouter_key, base_url=openrouter_url)
+        clients.append({
+            "provider": "openrouter",
+            "client": openai.AsyncOpenAI(api_key=openrouter_key, base_url=openrouter_url),
+            "model": "meta-llama/llama-3.3-70b-instruct",
+            "fast_model": "meta-llama/llama-3.1-8b-instruct",
+        })
 
-    logger.warning("No LLM API keys provided. Operating in heuristic mode.")
+    return clients
+
+
+async def safe_chat_completion(
+    messages: List[Dict[str, str]],
+    temperature: float = 0.2,
+    response_format: Optional[Dict[str, str]] = None,
+    use_fast_model: boolean = False,
+) -> Optional[str]:
+    """Execute LLM chat completion with automatic failover between providers on 429 rate limit or quota error."""
+    providers = get_llm_clients()
+
+    for p in providers:
+        client: openai.AsyncOpenAI = p["client"]
+        model = p["fast_model"] if use_fast_model else p["model"]
+        try:
+            kwargs: Dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+            }
+            if response_format:
+                kwargs["response_format"] = response_format
+
+            resp = await client.chat.completions.create(**kwargs)
+            return resp.choices[0].message.content
+        except Exception as e:
+            logger.warning(f"LLM provider '{p['provider']}' ({model}) failed with error: {e}. Trying next provider...")
+
     return None
 
 
 async def generate_greeting_response(task_description: str) -> str:
     """Return a warm, friendly greeting response without triggering any task."""
-    client = get_llm_client()
-    if client:
-        model = os.getenv("PLANNER_MODEL", "llama-3.3-70b-versatile")
-        if os.getenv("GEMINI_API_KEY"):
-            model = "gemini-2.0-flash"
-        try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are Maestro, a friendly personal AI assistant. "
-                            "The user has greeted you. Respond warmly in 1-2 sentences. "
-                            "Introduce yourself briefly and ask how you can help today."
-                        ),
-                    },
-                    {"role": "user", "content": task_description},
-                ],
-                temperature=0.7,
-            )
-            return resp.choices[0].message.content or "Hey there! I'm Maestro — your personal AI assistant. How can I help you today? 😊"
-        except Exception as e:
-            logger.error(f"LLM greeting failed: {e}")
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are Maestro, a friendly personal AI assistant. "
+                "The user has greeted you. Respond warmly in 1-2 sentences. "
+                "Introduce yourself briefly and ask how you can help today."
+            ),
+        },
+        {"role": "user", "content": task_description},
+    ]
+
+    result = await safe_chat_completion(messages, temperature=0.7)
+    if result:
+        return result
 
     return "Hey there! I'm Maestro — your personal AI assistant. What can I help you with today? 😊"
 
@@ -135,38 +170,31 @@ async def generate_plan_steps(
     Decompose a high-level task into concrete sub-task steps based on detected intent.
     """
     detected_domain = detect_prompt_domain(task_description, fallback_domain=domain)
-    client = get_llm_client()
+    tool_names = [t["name"] for t in tools]
 
-    if client:
-        # Determine model based on API provider
-        model = os.getenv("PLANNER_MODEL", "llama-3.3-70b-versatile")
-        if os.getenv("GEMINI_API_KEY"):
-            model = "gemini-2.0-flash"
+    prompt = (
+        f"You are an autonomous AI assistant. Decompose this user task into 1 to 3 sequential sub-task steps.\n"
+        f"Detected Domain: {detected_domain}\n"
+        f"Available tools: {tool_names}\n"
+        f"Task: {task_description}\n\n"
+        f"Return JSON object with key 'steps': array of string step descriptions."
+    )
 
-        tool_names = [t["name"] for t in tools]
-        prompt = (
-            f"You are an autonomous AI assistant. Decompose this user task into 1 to 3 sequential sub-task steps.\n"
-            f"Detected Domain: {detected_domain}\n"
-            f"Available tools: {tool_names}\n"
-            f"Task: {task_description}\n\n"
-            f"Return JSON object with key 'steps': array of string step descriptions."
-        )
+    result = await safe_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        response_format={"type": "json_object"},
+    )
 
+    if result:
         try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                response_format={"type": "json_object"},
-            )
-            content = resp.choices[0].message.content or "{}"
-            parsed = json.loads(content)
+            parsed = json.loads(result)
             if isinstance(parsed, list):
                 return parsed
             if isinstance(parsed, dict) and "steps" in parsed:
                 return parsed["steps"]
         except Exception as e:
-            logger.error(f"LLM plan generation failed: {e}. Falling back to domain heuristic.")
+            logger.error(f"Error parsing plan steps JSON: {e}")
 
     # Domain Heuristic Fallbacks based on DETECTED prompt domain
     if detected_domain == Intent.CODING.value:
@@ -193,29 +221,28 @@ async def generate_plan_steps(
 
 async def generate_real_code(task_description: str) -> str:
     """Use LLM to generate real, working code for the given task description."""
-    client = get_llm_client()
-    if client:
-        model = os.getenv("PLANNER_MODEL", "llama-3.3-70b-versatile")
-        if os.getenv("GEMINI_API_KEY"):
-            model = "gemini-2.0-flash"
-        try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an expert programmer. Generate complete, working, well-commented Python code "
-                            "for the given task. Return ONLY the raw Python code — no markdown fences, no explanation."
-                        ),
-                    },
-                    {"role": "user", "content": f"Write Python code for: {task_description}"},
-                ],
-                temperature=0.2,
-            )
-            return resp.choices[0].message.content or f"print('Task: {task_description}')"
-        except Exception as e:
-            logger.error(f"LLM code generation failed: {e}")
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an expert programmer. Generate complete, working, well-commented Python code "
+                "for the given task. Return ONLY the raw Python code — no markdown fences, no explanation."
+            ),
+        },
+        {"role": "user", "content": f"Write Python code for: {task_description}"},
+    ]
+
+    result = await safe_chat_completion(messages, temperature=0.2)
+    if result:
+        # Strip code block fences if returned by LLM
+        clean_code = result.strip()
+        if clean_code.startswith("```python"):
+            clean_code = clean_code[9:]
+        if clean_code.startswith("```"):
+            clean_code = clean_code[3:]
+        if clean_code.endswith("```"):
+            clean_code = clean_code[:-3]
+        return clean_code.strip()
 
     # Heuristic fallback — generate a sensible stub, not a placeholder
     td = task_description.lower()
@@ -292,7 +319,7 @@ async def select_tool_call(
     """
     step_lower = step_description.lower()
 
-    # Priority check for Coding tool — use LLM to generate real code
+    # Priority check for Coding tool — generate real code
     if any(k in step_lower for k in ["code", "script", "python", "write", "generate", "fibonacci", "loop", "sort", "function"]):
         code = await generate_real_code(step_description)
         return {
@@ -304,31 +331,27 @@ async def select_tool_call(
             "reasoning": "Generating and executing a real Python code solution via the code execution tool.",
         }
 
-    client = get_llm_client()
-    if client:
-        model = os.getenv("FAST_MODEL", "llama-3.1-8b-instant")
-        if os.getenv("GEMINI_API_KEY"):
-            model = "gemini-2.0-flash"
+    prompt = (
+        f"Select the best tool for this step: '{step_description}'.\n"
+        f"Available tools: {json.dumps(available_tools)}\n"
+        f"Remaining budget: ${budget_remaining}\n\n"
+        f"Return JSON object: {{'tool': string, 'arguments': dict, 'reasoning': string}}."
+    )
 
-        prompt = (
-            f"Select the best tool for this step: '{step_description}'.\n"
-            f"Available tools: {json.dumps(available_tools)}\n"
-            f"Remaining budget: ${budget_remaining}\n\n"
-            f"Return JSON object: {{'tool': string, 'arguments': dict, 'reasoning': string}}."
-        )
+    result = await safe_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.1,
+        response_format={"type": "json_object"},
+        use_fast_model=True,
+    )
+
+    if result:
         try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                response_format={"type": "json_object"},
-            )
-            content = resp.choices[0].message.content or "{}"
-            parsed = json.loads(content)
+            parsed = json.loads(result)
             if "tool" in parsed and "arguments" in parsed:
                 return parsed
         except Exception as e:
-            logger.error(f"LLM tool selection failed: {e}. Using heuristic selection.")
+            logger.error(f"Error parsing tool selection JSON: {e}")
 
     # Heuristic Tool Selection
     if "flight" in step_lower:
@@ -387,28 +410,21 @@ async def synthesize_friendly_response(
     """
     detected = detect_prompt_domain(task_description)
 
-    client = get_llm_client()
-    if client:
-        model = os.getenv("PLANNER_MODEL", "llama-3.3-70b-versatile")
-        if os.getenv("GEMINI_API_KEY"):
-            model = "gemini-2.0-flash"
+    prompt = (
+        f"You are a friendly personal AI assistant. Synthesize a warm, helpful 2 sentence summary of the completed task for the user.\n"
+        f"User task: {task_description}\n"
+        f"Execution results: {json.dumps(results)}\n"
+        f"Budget spent: ${budget_spent:.2f}\n\n"
+        f"Speak like a helpful assistant."
+    )
 
-        prompt = (
-            f"You are a friendly personal AI assistant. Synthesize a warm, helpful 2 sentence summary of the completed task for the user.\n"
-            f"User task: {task_description}\n"
-            f"Execution results: {json.dumps(results)}\n"
-            f"Budget spent: ${budget_spent:.2f}\n\n"
-            f"Speak like a helpful assistant."
-        )
-        try:
-            resp = await client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.4,
-            )
-            return resp.choices[0].message.content or "Task completed successfully!"
-        except Exception as e:
-            logger.error(f"LLM response synthesis failed: {e}")
+    result = await safe_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.4,
+    )
+
+    if result:
+        return result
 
     # Domain-aware fallback text
     if detected == Intent.CODING.value:

@@ -24,7 +24,7 @@ services:
     environment:
       - GATEWAY_URL=http://gateway:8080
       - SOLVER_URL=http://solver:8090
-      - POSTGRES_URL=postgresql://localhost:aeri3107@postgres:5432/airline_db
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/airline_db
       - FAST_MODEL=llama-3.1-8b-instant
     depends_on:
       postgres:
@@ -64,13 +64,13 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: airline_db
-      POSTGRES_USER: localhost
-      POSTGRES_PASSWORD: aeri3107
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U localhost -d airline_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d airline_db"]
       interval: 5s
       timeout: 5s
       retries: 5

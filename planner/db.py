@@ -8,7 +8,7 @@ from models import TraceEvent, TaskState
 
 logger = logging.getLogger(__name__)
 
-POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432/agent")
+POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@postgres:5432/airline_db")
 _pool: Optional[asyncpg.Pool] = None
 
 
