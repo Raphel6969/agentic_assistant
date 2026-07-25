@@ -6,8 +6,8 @@ services:
   - type: web
     name: orcheon-frontend
     runtime: docker
-    context: ./frontend
-    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -28,8 +28,8 @@ services:
   - type: web
     name: orcheon-planner
     runtime: docker
-    context: ./planner
-    dockerfilePath: ./planner/Dockerfile
+    dockerContext: ./planner
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -38,6 +38,8 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: GEMINI_API_KEY
+        sync: false
+      - key: POSTGRES_URL
         sync: false
       - key: GATEWAY_URL
         fromService:
@@ -54,8 +56,8 @@ services:
   - type: web
     name: orcheon-gateway
     runtime: docker
-    context: ./gateway
-    dockerfilePath: ./gateway/Dockerfile
+    dockerContext: ./gateway
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -66,8 +68,8 @@ services:
   - type: web
     name: orcheon-solver
     runtime: docker
-    context: ./solver
-    dockerfilePath: ./solver/Dockerfile
+    dockerContext: ./solver
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     envVars:
