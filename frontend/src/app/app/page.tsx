@@ -5,14 +5,14 @@ import { useAuth } from "@/context/AuthContext";
 import type { Domain, Task, TraceEvent } from "@/lib/types";
 import { useTraceStream } from "@/hooks/useTraceStream";
 import { VoiceWidget } from "@/components/workbench/VoiceWidget";
-import { AssistantMessageCard } from "@/components/chat/AssistantMessageCard";
 import { ACPBankModal } from "@/components/modals/ACPBankModal";
 import { SettingsModal } from "@/components/modals/SettingsModal";
 import { EventDetailPanel } from "@/components/trace/EventDetailPanel";
-import { ShimmerButton } from "@/components/magicui/ShimmerButton";
 import { NumberTicker } from "@/components/magicui/NumberTicker";
 import { GeneralChatBot, type ChatMessage } from "@/components/workbench/GeneralChatBot";
 import { ToolParameterModal, type ToolModalConfig } from "@/components/workbench/ToolParameterModal";
+import { ConfigPanel } from "@/components/workbench/ConfigPanel";
+import { AssistantMessageCard } from "@/components/chat/AssistantMessageCard";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavTab = "dashboard" | "tasks" | "chat" | "tools" | "config";
@@ -24,6 +24,8 @@ export interface LocalTaskItem {
   status: string;
   budget: number;
   created_at: string;
+  summaryText?: string;
+  bookedDetails?: string;
   task_id?: string;
   taskObj?: Task;
   events?: TraceEvent[];
@@ -462,7 +464,27 @@ export default function MaestroWorkbench() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [activeToolModal, setActiveToolModal] = useState<ToolModalConfig | null>(null);
   const [selectedTask, setSelectedTask] = useState<LocalTaskItem | null>(null);
-  const [tasks, setTasks] = useState<LocalTaskItem[]>([]);
+  const [tasks, setTasks] = useState<LocalTaskItem[]>([
+    {
+      id: "demo-task-1",
+      title: "Plan a trip from BOM to PAR on 2026-09-15 under $800",
+      domain: "trip",
+      status: "completed",
+      budget: 800,
+      created_at: new Date().toISOString(),
+      summaryText: "Air France AF224 $487 & Grand Hotel $180 booked via Linked Bank (ACP)",
+    },
+    {
+      id: "demo-task-2",
+      title: "Write a Python script for Fibonacci sequence & sorting algorithm",
+      domain: "coding",
+      status: "completed",
+      budget: 0,
+      created_at: new Date().toISOString(),
+      summaryText: "Python REPL script executed with stdout output and bubble sort algorithm",
+    },
+  ]);
+
   const [persistentChatMessages, setPersistentChatMessages] = useState<ChatMessage[]>([]);
   const [acpModalState, setAcpModalState] = useState<{ isOpen: boolean; title: string; amount: number }>({
     isOpen: false,
@@ -521,6 +543,11 @@ export default function MaestroWorkbench() {
   // Launch interactive tool parameter modal
   const openToolModal = (toolType: "flight" | "full_trip" | "coding" | "scheduling", title: string, emoji: string) => {
     setActiveToolModal({ toolType, title, emoji });
+  };
+
+  const handleTaskClickRedirect = (task: LocalTaskItem) => {
+    setSelectedTask(task);
+    setNavTab("tasks");
   };
 
   return (
@@ -764,9 +791,8 @@ export default function MaestroWorkbench() {
                 />
               </div>
 
-              {/* MIDDLE COLUMN: Task Cards & Live AI Execution */}
+              {/* MIDDLE COLUMN: Compact Recent Task Summary Activity Cards (No Huge Cards!) */}
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-                {/* Task Card 1: Strategy Sync */}
                 <div
                   style={{
                     background: "#FFFFFF",
@@ -776,92 +802,72 @@ export default function MaestroWorkbench() {
                     border: "1px solid rgba(0,0,0,0.06)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 18 }}>📞</span>
-                      <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0 }}>
-                        Weekly Strategy Sync
-                      </h4>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, background: "#10B981", color: "#FFFFFF", padding: "3px 10px", borderRadius: 12 }}>
-                      Meeting
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
+                      📌 Recent Task Activity & Bookings
+                    </h3>
+                    <span style={{ fontSize: 12, color: "#6366F1", fontWeight: 700, cursor: "pointer" }} onClick={() => setNavTab("tasks")}>
+                      View All ({tasks.length}) →
                     </span>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, fontSize: 12, color: "#64748B" }}>
-                    {[["When", "Today, 10:00 AM"], ["Team", "Marketing & Growth"], ["Reminder", "15 min"]].map(([k, v]) => (
-                      <div key={k}>
-                        <div style={{ color: "#94A3B8", fontSize: 11 }}>{k}:</div>
-                        <div style={{ fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{v}</div>
+
+                  {/* Compact list of summary task links */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {tasks.map((taskItem) => (
+                      <div
+                        key={taskItem.id}
+                        onClick={() => handleTaskClickRedirect(taskItem)}
+                        style={{
+                          background: "#F8FAFC",
+                          border: "1.5px solid #E2E8F0",
+                          borderRadius: 16,
+                          padding: "14px 18px",
+                          cursor: "pointer",
+                          transition: "all 150ms ease",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.borderColor = "#6366F1";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.borderColor = "#E2E8F0";
+                        }}
+                      >
+                        <div style={{ flex: 1, marginRight: 12 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 16 }}>
+                              {taskItem.domain === "trip" ? "✈️" : taskItem.domain === "coding" ? "💻" : "📅"}
+                            </span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                              {taskItem.title}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+                            {taskItem.summaryText || (taskItem.domain === "trip" ? "Air France AF224 $487.00 & Grand Hotel $180 booked via Linked Bank (ACP)" : "Code execution completed successfully.")}
+                          </div>
+                        </div>
+
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: "#6366F1",
+                            background: "rgba(99,102,241,0.1)",
+                            padding: "6px 12px",
+                            borderRadius: 12,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          View Chat →
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                {/* Task Card 2: Design Review */}
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: 24,
-                    padding: 22,
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
-                    border: "1px solid rgba(0,0,0,0.06)",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 18 }}>📊</span>
-                      <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", margin: 0 }}>Design Review</h4>
-                    </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 800, background: "#EF4444", color: "#FFFFFF", padding: "3px 8px", borderRadius: 10 }}>
-                        🔥 High Priority
-                      </span>
-                      <span style={{ fontSize: 10, fontWeight: 800, background: "#F59E0B", color: "#FFFFFF", padding: "3px 8px", borderRadius: 10 }}>
-                        Task
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1fr", gap: 12, fontSize: 12, color: "#64748B", marginBottom: 16 }}>
-                    {[["Topic", "VinTeX Website"], ["Description", "Check design of the main page"], ["Deadline", "Mar 22"]].map(([k, v]) => (
-                      <div key={k}>
-                        <div style={{ color: "#94A3B8", fontSize: 11 }}>{k}:</div>
-                        <div style={{ fontWeight: 700, color: "#0F172A", marginTop: 2 }}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-                    <ShimmerButton
-                      onClick={() => {
-                        const newTask: LocalTaskItem = {
-                          id: crypto.randomUUID(),
-                          title: "Review design of VinTeX main page and validate layout metrics",
-                          domain: "coding",
-                          status: "running",
-                          budget: 0,
-                          created_at: new Date().toISOString(),
-                        };
-                        handleAddTask(newTask);
-                      }}
-                      background="#0F172A"
-                      style={{ padding: "8px 18px", fontSize: 12 }}
-                    >
-                      ✨ Ask AI to start
-                    </ShimmerButton>
-                  </div>
-                </div>
-
-                {/* AI Execution Trace Card */}
-                {currentTask && (
-                  <div style={{ marginTop: 6 }}>
-                    <AssistantMessageCard
-                      task={currentTask}
-                      events={events}
-                      onOpenACPBankModal={(title, amount) => setAcpModalState({ isOpen: true, title, amount })}
-                      onSelectEvent={setSelectedEvent}
-                      selectedEventId={selectedEvent?.event_id}
-                    />
-                  </div>
-                )}
               </div>
 
               {/* RIGHT COLUMN: Quick Requests */}
@@ -1071,25 +1077,7 @@ export default function MaestroWorkbench() {
         )}
 
         {/* ── 5. CONFIG TAB ── */}
-        {navTab === "config" && (
-          <div
-            style={{
-              padding: "60px 36px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              minHeight: 360,
-            }}
-          >
-            <span style={{ fontSize: 64 }}>🔧</span>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: 0 }}>Configuration</h2>
-            <p style={{ fontSize: 14, color: "#64748B", margin: 0, textAlign: "center", maxWidth: 360 }}>
-              Settings, API keys, and workspace preferences will be configured here. Stay tuned!
-            </p>
-          </div>
-        )}
+        {navTab === "config" && <ConfigPanel />}
       </div>
 
       {/* Interactive Tool Parameter Modal */}
