@@ -41,17 +41,16 @@ Blockers: None.
 
 ## Phase 2 — Determinism layer (Hour 4–9)
 **Goal:** the guardrail and solver actually enforce something, not just log it.
-**Checkpoint:** agent physically cannot exceed the declared budget; a forced tool
-failure gets retried, circuit-broken, and logged.
+**Checkpoint:** agent physically cannot exceed the declared budget; a forced tool failure gets retried, circuit-broken, and logged.
 
-- [ ] Rust policy engine: budget ceiling + permission-tier enforcement (see `RULES.md`)
-- [ ] Rust ranking/constraint solver wired into the planner's tool selection
-- [ ] Episodic trace logging to Postgres (schema in `DOCUMENTATION.md`)
-- [ ] Retry + circuit breaker in Go gateway, with fallback tool substitution
+- [x] Rust policy engine: budget ceiling + permission-tier enforcement (see `RULES.md`)
+- [x] Rust ranking/constraint solver wired into the planner's tool selection (`solver/src/ranking.rs`)
+- [x] Episodic trace logging to Postgres (`planner/db.py` & `infra/db/init.sql`)
+- [x] Retry + circuit breaker in Go gateway, with fallback tool substitution (`gateway/middleware/circuit_breaker.go`)
 
-Status: **NOT STARTED**
-Approach notes:
-Blockers:
+Status: **DONE**
+Approach notes: Rust policy engine (`solver/src/policy.rs`) with budget ceiling hard blocks & irreversible approval gating; Rust multi-objective constraint ranking solver (`solver/src/ranking.rs`); Go circuit breaker middleware with exponential backoff & fallback tool substitution (`gateway/middleware/`); async Postgres persistence layer (`planner/db.py`).
+Blockers: None.
 
 ---
 

@@ -1,17 +1,28 @@
 //! Agentic Assistant — Solver Service
-//! Phase 0 scaffold: Axum HTTP server boots, health endpoint returns 200.
-//! Phase 2: guardrail engine + constraint ranking solver wired in.
+//! Rust policy engine & multi-objective constraint ranking solver.
+
+mod policy;
+mod ranking;
 
 use axum::{routing::get, routing::post, Json, Router};
+use policy::{evaluate_policy, PolicyCheckRequest, PolicyCheckResponse};
+use ranking::{rank_options, RankRequest, RankResponse};
 use serde_json::{json, Value};
 use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     let app = Router::new()
         .route("/health", get(health))
-        .route("/guardrail/check", post(guardrail_check_stub))
-        .route("/rank", post(rank_stub));
+        .route("/guardrail/check", post(guardrail_check_handler))
+        .route("/rank", post(rank_handler))
+        .layer(cors);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8090));
     println!("Solver listening on {addr}");
@@ -24,43 +35,16 @@ async fn health() -> Json<Value> {
     Json(json!({
         "status": "ok",
         "service": "solver",
-        "phase": "0-scaffold"
+        "phase": "2-determinism-layer"
     }))
 }
 
-/// Phase 2 stub: guardrail check.
-/// Returns "allowed" for everything until the real engine is wired.
-async fn guardrail_check_stub(Json(body): Json<Value>) -> Json<Value> {
-    Json(json!({
-        "task_id": body.get("task_id").unwrap_or(&json!("")),
-        "action_name": body.get("action_name").unwrap_or(&json!("")),
-        "result": "allowed",
-        "reason": "stub — real guardrail not yet wired (Phase 2)",
-        "budget_remaining": body
-            .get("budget_state")
-            .and_then(|b| b.get("ceiling"))
-            .unwrap_or(&json!(0))
-    }))
+async fn guardrail_check_handler(Json(req): Json<PolicyCheckRequest>) -> Json<PolicyCheckResponse> {
+    let resp = evaluate_policy(&req);
+    Json(resp)
 }
 
-/// Phase 2 stub: multi-objective ranking.
-/// Returns options in original order until the solver is wired.
-async fn rank_stub(Json(body): Json<Value>) -> Json<Value> {
-    let empty: Vec<Value> = vec![];
-    let options = body
-        .get("options")
-        .and_then(|o| o.as_array())
-        .unwrap_or(&empty);
-
-    let ranked_ids: Vec<Value> = options
-        .iter()
-        .filter_map(|o| o.get("id").cloned())
-        .collect();
-
-    Json(json!({
-        "task_id": body.get("task_id").unwrap_or(&json!("")),
-        "ranked_ids": ranked_ids,
-        "scores": {},
-        "note": "stub — real constraint solver not yet wired (Phase 2)"
-    }))
+async fn rank_handler(Json(req): Json<RankRequest>) -> Json<RankResponse> {
+    let resp = rank_options(&req);
+    Json(resp)
 }

@@ -56,8 +56,13 @@ class TraceManager:
             self._events_by_task[task_id] = []
         self._events_by_task[task_id].append(event)
 
-        # Broadcast event asynchronously
+        # Broadcast event asynchronously & persist to DB
         asyncio.create_task(self.broadcast(event))
+        try:
+            from db import save_trace_event_db
+            asyncio.create_task(save_trace_event_db(event))
+        except Exception:
+            pass
         return event
 
     def get_task_events(self, task_id: str) -> List[TraceEvent]:
