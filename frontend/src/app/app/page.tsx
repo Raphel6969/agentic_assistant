@@ -1006,10 +1006,10 @@ export default function MaestroWorkbench() {
         {navTab === "chat" && (
           <div style={{ padding: "28px 36px", maxWidth: 960, margin: "0 auto" }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-              Maestro AI Chat Assistant
+              Orcheon AI Chat Assistant
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 24px" }}>
-              Ask general questions, check current date/time, request coding advice, or give Maestro tasks to execute.
+              Ask general questions, check current date/time, request coding advice, or give Orcheon tasks to execute.
             </p>
             <GeneralChatBot
               messages={persistentChatMessages}

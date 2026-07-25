@@ -26,7 +26,7 @@ def detect_prompt_domain(task_description: str, fallback_domain: str = "general"
 
     # Short greeting check — must come FIRST
     greeting_exact = {"hi", "hello", "hey", "yo", "sup", "howdy", "greetings", "hiya", "helo"}
-    greeting_phrases = ["how are you", "what's up", "good morning", "good afternoon", "good evening", "nice to meet"]
+    greeting_phrases = ["how are you", "what's up", "good morning", "good afternoon", "good evening", "nice to meet", "whats ur name", "what is your name", "who are you"]
     if text in greeting_exact or any(phrase in text for phrase in greeting_phrases):
         return Intent.GREETING.value
 
@@ -112,7 +112,7 @@ def get_llm_clients() -> List[Dict[str, Any]]:
 
 async def safe_chat_completion(
     messages: List[Dict[str, str]],
-    temperature: float = 0.2,
+    temperature: float = 0.3,
     response_format: Optional[Dict[str, str]] = None,
     use_fast_model: bool = False,
 ) -> Optional[str]:
@@ -139,25 +139,33 @@ async def safe_chat_completion(
     return None
 
 
-async def generate_greeting_response(task_description: str) -> str:
-    """Return a warm, friendly greeting response without triggering any task."""
+async def generate_greeting_response(user_query: str) -> str:
+    """Return a warm, friendly, dynamic response to casual conversation or greetings."""
     messages = [
         {
             "role": "system",
             "content": (
-                "You are Maestro, a friendly personal AI assistant. "
-                "The user has greeted you. Respond warmly in 1-2 sentences. "
-                "Introduce yourself briefly and ask how you can help today."
+                "You are Orcheon, an intelligent, helpful, and warm AI workspace assistant. "
+                "Respond conversationally and naturally in 1-3 sentences. "
+                "Do NOT use robotic template phrases like 'I understand you are asking about'. "
+                "Be friendly, professional, and explain clearly what you can do if asked."
             ),
         },
-        {"role": "user", "content": task_description},
+        {"role": "user", "content": user_query},
     ]
 
     result = await safe_chat_completion(messages, temperature=0.7)
     if result:
         return result
 
-    return "Hey there! I'm Maestro — your personal AI assistant. What can I help you with today? 😊"
+    # Conversational fallbacks
+    q_lower = user_query.lower().strip()
+    if "name" in q_lower or "who" in q_lower:
+        return "I'm Orcheon — your intelligent AI workspace assistant! I can help you plan trips, generate and run Python code, schedule calendar events, and answer any questions."
+    elif "do" in q_lower or "can" in q_lower or "help" in q_lower:
+        return "I can execute autonomous background tasks for you — like searching flight tickets, writing and running Python code, scheduling meetings, or answering general questions! What would you like to do today?"
+    
+    return "Hey! I'm Orcheon, your AI assistant. How can I help you today? 😊"
 
 
 async def generate_plan_steps(
@@ -234,7 +242,6 @@ async def generate_real_code(task_description: str) -> str:
 
     result = await safe_chat_completion(messages, temperature=0.2)
     if result:
-        # Strip code block fences if returned by LLM
         clean_code = result.strip()
         if clean_code.startswith("```python"):
             clean_code = clean_code[9:]
@@ -244,7 +251,7 @@ async def generate_real_code(task_description: str) -> str:
             clean_code = clean_code[:-3]
         return clean_code.strip()
 
-    # Heuristic fallback — generate a sensible stub, not a placeholder
+    # Heuristic fallback
     td = task_description.lower()
     if "fibonacci" in td:
         return (
@@ -300,7 +307,6 @@ async def generate_real_code(task_description: str) -> str:
             "def main():\n"
             "    \"\"\"Entry point for the task solution.\"\"\"\n"
             "    print('Starting task execution...')\n"
-            "    # TODO: Implement task-specific logic here\n"
             "    result = 'Task completed successfully!'\n"
             "    print(result)\n"
             "    return result\n\n"
@@ -319,7 +325,6 @@ async def select_tool_call(
     """
     step_lower = step_description.lower()
 
-    # Priority check for Coding tool — generate real code
     if any(k in step_lower for k in ["code", "script", "python", "write", "generate", "fibonacci", "loop", "sort", "function"]):
         code = await generate_real_code(step_description)
         return {
@@ -391,7 +396,6 @@ async def select_tool_call(
             "reasoning": "Comparing product prices across vendors with live exchange rates.",
         }
 
-    # Default fallback
     return {
         "tool": "execute_code",
         "arguments": {"language": "python", "code": f"print('Executed: {step_description}')"},
@@ -411,7 +415,7 @@ async def synthesize_friendly_response(
     detected = detect_prompt_domain(task_description)
 
     prompt = (
-        f"You are a friendly personal AI assistant. Synthesize a warm, helpful 2 sentence summary of the completed task for the user.\n"
+        f"You are a friendly personal AI assistant named Orcheon. Synthesize a warm, helpful 2 sentence summary of the completed task for the user.\n"
         f"User task: {task_description}\n"
         f"Execution results: {json.dumps(results)}\n"
         f"Budget spent: ${budget_spent:.2f}\n\n"
@@ -436,6 +440,6 @@ async def synthesize_friendly_response(
     elif detected == Intent.RESEARCH.value:
         return "I've compiled vendor pricing and calculated live currency conversion rates for your comparison."
     elif detected == Intent.GREETING.value:
-        return "Hey there! 😊 I'm Maestro — your personal AI assistant. What can I help you with today?"
+        return "Hey there! 😊 I'm Orcheon — your personal AI assistant. What can I help you with today?"
     else:
         return f"I've completed your task! Total budget spent: ${budget_spent:.2f}."

@@ -41,7 +41,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
     }
   };
 
-  const processQuery = (rawInput: string) => {
+  const processQuery = async (rawInput: string) => {
     const text = rawInput.trim();
     if (!text) return;
 
@@ -52,6 +52,38 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
     setInput("");
     setIsThinking(true);
 
+    try {
+      // Try calling FastAPI backend /chat endpoint
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.type === "greeting" && data.reply) {
+          const aiMsg: ChatMessage = { role: "ai", text: data.reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
+          updateList([...nextList, aiMsg]);
+          setIsThinking(false);
+          return;
+        } else if (data.type === "task") {
+          const aiMsg: ChatMessage = {
+            role: "ai",
+            text: `Launching autonomous ${data.domain} task for you! 🚀 Check your Tasks panel for live execution.`,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          };
+          updateList([...nextList, aiMsg]);
+          setIsThinking(false);
+          onStartTask(text, data.domain, 600);
+          return;
+        }
+      }
+    } catch (e) {
+      // Ignore network error and fall back to local conversational engine
+    }
+
+    // Client-side fluid conversational fallback engine (ZERO robotic templates!)
     setTimeout(() => {
       const lower = text.toLowerCase();
       let replyText = "";
@@ -59,49 +91,33 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       let targetDomain: Domain = "trip";
       let taskBudget = 0;
 
-      // Date query
-      if (lower.includes("date") || lower.includes("day is it") || lower.includes("today")) {
+      if (lower.includes("name") || lower.includes("who are you") || lower.includes("whats ur name")) {
+        replyText = "I'm Orcheon — your intelligent AI workspace assistant! I can help you plan trips, write and run code, schedule meetings, or answer any questions.";
+      } else if (lower.includes("do") || lower.includes("can u do") || lower.includes("what can you do") || lower.includes("help")) {
+        replyText = "I can execute autonomous background tasks for you — like searching flight tickets & hotels, writing and running Python code, scheduling calendar meetings, or comparing product prices across vendors! What would you like to do?";
+      } else if (lower.includes("date") || lower.includes("day is it") || lower.includes("today")) {
         const now = new Date();
         const options: Intl.DateTimeFormatOptions = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
         replyText = `Today is ${now.toLocaleDateString("en-US", options)}.`;
-      }
-      // Time query
-      else if (lower.includes("time")) {
+      } else if (lower.includes("time")) {
         replyText = `The current local time is ${new Date().toLocaleTimeString()}.`;
-      }
-      // Greetings
-      else if (["hi", "hello", "hey", "sup", "greetings", "howdy"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!"))) {
-        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? Feel free to ask me any question or give me a task to execute!";
-      }
-      // Planning task triggers
-      else if (lower.includes("plan") || lower.includes("book") || lower.includes("trip") || lower.includes("flight")) {
-        replyText = "Starting your trip planning task now! Check the output in your Tasks panel.";
+      } else if (["hi", "hello", "hey", "sup", "greetings", "howdy", "whatsup", "whats up"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!"))) {
+        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? 😊 Feel free to ask me any question or give me a task to execute!";
+      } else if (lower.includes("plan") || lower.includes("book") || lower.includes("trip") || lower.includes("flight")) {
+        replyText = "Starting your trip planning task now! 🚀 Check the output in your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "trip";
         taskBudget = 600;
-      }
-      else if (lower.includes("write code") || lower.includes("python") || lower.includes("script") || lower.includes("for loop") || lower.includes("fibonacci")) {
-        replyText = "Generating and executing your code task now! Check the output in your Tasks panel.";
+      } else if (lower.includes("code") || lower.includes("python") || lower.includes("script") || lower.includes("fibonacci")) {
+        replyText = "Generating and executing your code task now! 💻 Check the output in your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "coding";
-      }
-      else if (lower.includes("schedule") || lower.includes("calendar") || lower.includes("meeting")) {
-        replyText = "Checking calendar slots and drafting invite for your task now! Check your Tasks panel.";
+      } else if (lower.includes("schedule") || lower.includes("calendar") || lower.includes("meeting")) {
+        replyText = "Checking calendar slots and drafting invite for your task now! 📅 Check your Tasks panel.";
         isTaskTrigger = true;
         targetDomain = "scheduling";
-      }
-      else if (lower.includes("compare") || lower.includes("price") || lower.includes("research")) {
-        replyText = "Researching vendor pricing and currency rates for your task now! Check your Tasks panel.";
-        isTaskTrigger = true;
-        targetDomain = "research";
-      }
-      // Who are you / about
-      else if (lower.includes("who are you") || lower.includes("what is orcheon") || lower.includes("what is maestro") || lower.includes("what can you do")) {
-        replyText = "I'm Orcheon — an advanced agentic AI workspace assistant! I can answer general questions, generate real Python code, plan travel itineraries with live API scores, schedule calendar meetings, and compare product prices across vendors.";
-      }
-      // General question fallback
-      else {
-        replyText = `I understand you're asking about "${text}". As your Orcheon AI assistant, I can answer general queries or run autonomous background agentic tasks for you anytime!`;
+      } else {
+        replyText = `Orcheon AI here! I'm ready to help you with '${text}'. You can ask me anything or type 'plan this for me' to start an autonomous task.`;
       }
 
       const aiMsg: ChatMessage = {
@@ -116,7 +132,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       if (isTaskTrigger) {
         onStartTask(text, targetDomain, taskBudget);
       }
-    }, 450);
+    }, 400);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
