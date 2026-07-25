@@ -18,7 +18,7 @@ export type GuardrailResult = "allowed" | "blocked" | "requires_approval" | null
 
 export type TaskStatus = "idle" | "planning" | "running" | "done" | "failed";
 
-export type Domain = "trip" | "scheduling" | "research";
+export type Domain = "trip" | "scheduling" | "research" | "coding" | "general";
 
 export interface TraceEvent {
   event_id: string;

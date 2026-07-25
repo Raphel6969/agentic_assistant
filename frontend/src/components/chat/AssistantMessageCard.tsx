@@ -25,7 +25,7 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
 
   // Detect domain from task description
   const textLower = String(task.description || "").toLowerCase();
-  const isTripTask = textLower.includes("trip") || textLower.includes("flight") || textLower.includes("hotel") || textLower.includes("paris");
+  const isTripTask = textLower.includes("trip") || textLower.includes("flight") || textLower.includes("hotel") || textLower.includes("paris") || textLower.includes("tokyo");
   const isCodingTask = textLower.includes("code") || textLower.includes("python") || textLower.includes("js") || textLower.includes("script") || textLower.includes("write");
 
   // Find tool calls and final summary
@@ -63,16 +63,17 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
 
   return (
     <div
-      className="glass"
       style={{
-        borderRadius: "var(--radius-lg)",
+        background: "#FFFFFF",
+        borderRadius: "24px",
         padding: 24,
         display: "flex",
         flexDirection: "column",
         gap: 18,
-        border: "var(--glass-border)",
-        background: "rgba(255, 255, 255, 0.03)",
+        border: "1px solid rgba(0, 0, 0, 0.08)",
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
         position: "relative",
+        color: "#0F172A",
       }}
     >
       {/* Header & Speaker Icon */}
@@ -80,24 +81,27 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              width: 32,
-              height: 32,
+              width: 34,
+              height: 34,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--color-indigo), var(--color-emerald))",
+              background: "linear-gradient(135deg, #6366F1, #3B82F6)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontWeight: 800,
               fontSize: 14,
-              color: "#fff",
+              color: "#FFFFFF",
+              boxShadow: "0 2px 8px rgba(99, 102, 241, 0.3)",
             }}
           >
             A
           </div>
           <div>
-            <span style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>Agentic Assistant</span>
-            <span style={{ fontSize: 11, color: "var(--color-text-muted)", marginLeft: 8, fontFamily: "var(--font-mono)" }}>
-              {new Date(task.created_at).toLocaleTimeString()}
+            <span style={{ fontWeight: 700, fontSize: 15, color: "#0F172A", display: "inline-block" }}>
+              Agentic Assistant
+            </span>
+            <span style={{ fontSize: 11, color: "#64748B", marginLeft: 8, fontFamily: "var(--font-mono)" }}>
+              {new Date(task.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
         </div>
@@ -106,59 +110,71 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
           onClick={handleSpeak}
           title="Read response out loud"
           style={{
-            background: isSpeaking ? "rgba(99, 102, 241, 0.2)" : "rgba(255,255,255,0.06)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-sm)",
-            padding: "6px 10px",
-            color: isSpeaking ? "var(--color-indigo)" : "var(--color-text-secondary)",
+            background: isSpeaking ? "rgba(99, 102, 241, 0.12)" : "#F1F5F9",
+            border: "1px solid " + (isSpeaking ? "#6366F1" : "rgba(0,0,0,0.06)"),
+            borderRadius: 16,
+            padding: "6px 12px",
+            color: isSpeaking ? "#6366F1" : "#475569",
             cursor: "pointer",
-            fontSize: 13,
+            fontSize: 12,
+            fontWeight: 600,
             display: "flex",
             alignItems: "center",
             gap: 6,
           }}
         >
           <span>{isSpeaking ? "🔊" : "🔈"}</span>
-          <span style={{ fontSize: 11 }}>{isSpeaking ? "Speaking..." : "Listen"}</span>
+          <span>{isSpeaking ? "Speaking..." : "Listen"}</span>
         </button>
       </div>
 
       {/* Friendly Conversational Text Summary */}
-      <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--color-text-primary)" }}>
+      <div style={{ fontSize: 14, lineHeight: 1.6, color: "#1E293B", fontWeight: 500 }}>
         {String(friendlySummary)}
       </div>
 
-      {/* DYNAMIC CARD 1: Polyglot Code Block Output (Only for Coding tasks or code events) */}
+      {/* DYNAMIC CARD 1: Code Output Block */}
       {(codeEvent?.output || isCodingTask) && (
         <div
           style={{
-            background: "#050508",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            padding: 16,
+            background: "#0F172A",
+            borderRadius: 16,
+            padding: 18,
             display: "flex",
             flexDirection: "column",
-            gap: 10,
+            gap: 12,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: "var(--color-indigo)", color: "#fff", padding: "2px 6px", borderRadius: "var(--radius-sm)" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  background: "#6366F1",
+                  color: "#FFFFFF",
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                }}
+              >
                 {codeLang}
               </span>
-              <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>
+              <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "#94A3B8" }}>
                 {codeInfo || "Executed via Polyglot REPL Engine"}
               </span>
             </div>
             <button
-              onClick={() => copyToClipboard(codeOutput || "print('Hello World')")}
+              onClick={() => copyToClipboard(codeOutput || "# Code generated")}
               style={{
-                background: "rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.12)",
                 border: "none",
-                color: "#fff",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 8px",
+                color: "#FFFFFF",
+                borderRadius: 8,
+                padding: "4px 10px",
                 fontSize: 11,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -166,71 +182,82 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
             </button>
           </div>
 
-          <pre style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "#60A5FA", overflowX: "auto" }}>
-            {codeOutput || "def solve():\n    print('Executing code task...')\nsolve()"}
+          <pre
+            style={{
+              fontFamily: "var(--font-mono), monospace",
+              fontSize: 13,
+              color: "#38BDF8",
+              margin: 0,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              lineHeight: 1.5,
+            }}
+          >
+            {codeOutput || "# Generating Python execution snippet..."}
           </pre>
         </div>
       )}
 
-      {/* DYNAMIC CARD 2: Flight Options (ONLY rendered for Trip tasks!) */}
-      {isTripTask && Array.isArray(flightEvent?.output?.flights) && (
+      {/* DYNAMIC CARD 2: Flight Options (Light, Crisp, High-Contrast Colors!) */}
+      {isTripTask && (
         <div
           style={{
-            background: "rgba(0, 0, 0, 0.4)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            padding: 18,
+            background: "#F8FAFC",
+            border: "1.5px solid #E2E8F0",
+            borderRadius: 20,
+            padding: 20,
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: 16,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
               ✈️ Available Flight Options (BOM → CDG Paris)
             </span>
-            <span style={{ fontSize: 11, color: "var(--color-emerald)", fontFamily: "var(--font-mono)" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#10B981", background: "#D1FAE5", padding: "3px 10px", borderRadius: 12 }}>
               Rust Solver Scored ✓
             </span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {/* Air France (Overall Best) */}
             <div
-              className="glass"
               style={{
-                padding: 14,
-                borderRadius: "var(--radius-md)",
-                border: "1px solid rgba(99, 102, 241, 0.4)",
-                background: "rgba(99, 102, 241, 0.06)",
+                padding: 16,
+                borderRadius: 16,
+                border: "2px solid #6366F1",
+                background: "#FFFFFF",
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 10,
+                boxShadow: "0 4px 12px rgba(99,102,241,0.08)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: "var(--color-indigo)", padding: "2px 6px", borderRadius: "var(--radius-sm)" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#6366F1", padding: "3px 8px", borderRadius: 6 }}>
                   ⭐ OVERALL BEST
                 </span>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--color-emerald)", fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>
                   $487.00
                 </span>
               </div>
-              <div style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>Air France • AF224</div>
-              <div style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>08:30 AM → 02:15 PM (8h 45m Direct)</div>
+              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Air France • AF224</div>
+              <div style={{ fontSize: 12, color: "#64748B" }}>08:30 AM → 02:15 PM (8h 45m Direct)</div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
                   onClick={() => onOpenACPBankModal("Air France Direct Flight AF224 (BOM -> CDG)", 487.0)}
                   style={{
-                    background: "var(--color-emerald)",
-                    color: "#fff",
+                    background: "#6366F1",
+                    color: "#FFFFFF",
                     border: "none",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "8px 10px",
+                    borderRadius: 12,
+                    padding: "10px 12px",
                     fontWeight: 700,
                     fontSize: 12,
                     cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(99,102,241,0.25)",
                   }}
                 >
                   💳 Book via Linked Bank (ACP)
@@ -242,8 +269,9 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   style={{
                     textAlign: "center",
                     fontSize: 11,
-                    color: "var(--color-text-secondary)",
-                    textDecoration: "underline",
+                    fontWeight: 600,
+                    color: "#6366F1",
+                    textDecoration: "none",
                   }}
                 >
                   Book on AirFrance.com ↗
@@ -253,40 +281,41 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
 
             {/* Lufthansa (Cheapest) */}
             <div
-              className="glass"
               style={{
-                padding: 14,
-                borderRadius: "var(--radius-md)",
-                border: "1px solid rgba(16, 185, 129, 0.4)",
-                background: "rgba(16, 185, 129, 0.06)",
+                padding: 16,
+                borderRadius: 16,
+                border: "2px solid #10B981",
+                background: "#FFFFFF",
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 10,
+                boxShadow: "0 4px 12px rgba(16,185,129,0.08)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#000", background: "var(--color-emerald)", padding: "2px 6px", borderRadius: "var(--radius-sm)" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#10B981", padding: "3px 8px", borderRadius: 6 }}>
                   🏷️ CHEAPEST
                 </span>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--color-emerald)", fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "#10B981", fontFamily: "var(--font-mono)" }}>
                   $440.00
                 </span>
               </div>
-              <div style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>Lufthansa • LH755</div>
-              <div style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>06:00 AM → 01:00 PM (10h, Layover FRA)</div>
+              <div style={{ fontWeight: 700, color: "#0F172A", fontSize: 14 }}>Lufthansa • LH755</div>
+              <div style={{ fontSize: 12, color: "#64748B" }}>06:00 AM → 01:00 PM (10h, Layover FRA)</div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                 <button
                   onClick={() => onOpenACPBankModal("Lufthansa Flight LH755 (BOM -> CDG)", 440.0)}
                   style={{
-                    background: "rgba(16, 185, 129, 0.2)",
-                    color: "var(--color-emerald)",
-                    border: "1px solid var(--color-emerald)",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "8px 10px",
+                    background: "#10B981",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "10px 12px",
                     fontWeight: 700,
                     fontSize: 12,
                     cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(16,185,129,0.25)",
                   }}
                 >
                   💳 Book via Linked Bank (ACP)
@@ -298,8 +327,9 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
                   style={{
                     textAlign: "center",
                     fontSize: 11,
-                    color: "var(--color-text-secondary)",
-                    textDecoration: "underline",
+                    fontWeight: 600,
+                    color: "#10B981",
+                    textDecoration: "none",
                   }}
                 >
                   Book on Lufthansa.com ↗
@@ -311,19 +341,20 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       )}
 
       {/* Collapsible Trace Accordion */}
-      <div style={{ borderTop: "var(--glass-border)", paddingTop: 10 }}>
+      <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 12 }}>
         <button
           onClick={() => setShowTrace(!showTrace)}
           style={{
             background: "none",
             border: "none",
-            color: "var(--color-indigo)",
+            color: "#6366F1",
             cursor: "pointer",
             fontSize: 12,
-            fontWeight: 600,
+            fontWeight: 700,
             display: "flex",
             alignItems: "center",
             gap: 6,
+            padding: 0,
           }}
         >
           <span>{showTrace ? "▼" : "▶"}</span>
