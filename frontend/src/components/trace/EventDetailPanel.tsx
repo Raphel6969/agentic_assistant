@@ -51,7 +51,7 @@ export const EventDetailPanel: React.FC<EventDetailPanelProps> = ({
         </button>
       </div>
 
-      <div style={{ borderBottom: "var(--glass-border)", pb: 12 }}>
+      <div style={{ borderBottom: "var(--glass-border)", paddingBottom: 12 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>
           {event.type.toUpperCase()}
           {event.tool && <span style={{ color: "var(--color-indigo)", marginLeft: 8 }}>• {event.tool}</span>}
