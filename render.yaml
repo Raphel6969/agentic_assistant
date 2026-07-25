@@ -7,7 +7,7 @@ services:
     name: orcheon-frontend
     runtime: docker
     dockerContext: ./frontend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./frontend/Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -29,7 +29,7 @@ services:
     name: orcheon-planner
     runtime: docker
     dockerContext: ./planner
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./planner/Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -57,7 +57,7 @@ services:
     name: orcheon-gateway
     runtime: docker
     dockerContext: ./gateway
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./gateway/Dockerfile
     plan: free
     region: oregon
     envVars:
@@ -69,7 +69,7 @@ services:
     name: orcheon-solver
     runtime: docker
     dockerContext: ./solver
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./solver/Dockerfile
     plan: free
     region: oregon
     envVars:
