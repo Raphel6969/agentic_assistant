@@ -71,7 +71,7 @@ export const GeneralChatBot: React.FC<GeneralChatBotProps> = ({
       }
       // Greetings
       else if (["hi", "hello", "hey", "sup", "greetings", "howdy"].some((g) => lower === g || lower.startsWith(g + " ") || lower.startsWith(g + "!"))) {
-        replyText = "Hey there! 😊 How can I help you today? Feel free to ask me any question or give me a task to execute!";
+        replyText = "Hey! I'm Orcheon, your AI assistant. How can I help you today? 😊 Feel free to ask me any question or give me a task to execute!";
       }
       // Planning task triggers
       else if (lower.includes("plan") || lower.includes("book") || lower.includes("trip") || lower.includes("flight")) {

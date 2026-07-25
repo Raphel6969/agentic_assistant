@@ -22,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Maestro — Autonomous Multi-Agent Platform",
+  title: "Orcheon — Autonomous Multi-Agent Platform",
   description:
     "Decompose high-level instructions into sub-tasks over a Rust policy engine, polyglot REPL, and Agentic Commerce Protocol.",
 };
