@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import type { TraceEvent, Task } from "@/lib/types";
 import { TraceEventNode } from "@/components/trace/TraceEventNode";
+import { ArtifactExporter } from "@/components/workbench/ArtifactExporter";
 
 interface AssistantMessageCardProps {
   task: Task;
@@ -207,6 +208,15 @@ export const AssistantMessageCard: React.FC<AssistantMessageCardProps> = ({
       <div style={{ fontSize: 14, lineHeight: 1.6, color: "#1E293B", fontWeight: 500 }}>
         {String(friendlySummary)}
       </div>
+
+      {/* 1-Click Artifact Exporter Bar */}
+      <ArtifactExporter
+        taskTitle={task.description}
+        domain={task.domain}
+        codeSnippet={codeSnippet}
+        summaryText={friendlySummary}
+        bookedDetails={isTripTask ? `Air France AF224 $487 & Grand Hotel Paris (${originCode} -> ${destCode})` : undefined}
+      />
 
       {/* DYNAMIC CARD 1: Code Output Block (ONLY for Coding Tasks!) */}
       {isCodingTask && (

@@ -14,6 +14,7 @@ import { GeneralChatBot, type ChatMessage } from "@/components/workbench/General
 import { ToolParameterModal, type ToolModalConfig } from "@/components/workbench/ToolParameterModal";
 import { ConfigPanel } from "@/components/workbench/ConfigPanel";
 import { AssistantMessageCard } from "@/components/chat/AssistantMessageCard";
+import { PlanInspectorBar } from "@/components/workbench/PlanInspectorBar";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type NavTab = "dashboard" | "tasks" | "chat" | "tools" | "config";
@@ -251,17 +252,52 @@ function DedicatedTasksPanel({
         {selectedTask ? (
           <div style={{ padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Selected Task Top Banner */}
-            <div style={{ borderBottom: "1px solid #E2E8F0", paddingBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{selectedTask.title}</h3>
+            <div style={{ borderBottom: "1px solid #E2E8F0", paddingBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{selectedTask.title}</h3>
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: "#64748B" }}>
+                  Domain: <strong style={{ color: "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: 13, color: "#64748B" }}>
-                Domain: <strong style={{ color: "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
-              </p>
+
+              {/* Feature 4: Clone & Re-run Task Button */}
+              <button
+                onClick={() => {
+                  onAddTaskClick();
+                }}
+                style={{
+                  background: "rgba(99,102,241,0.12)",
+                  color: "#6366F1",
+                  border: "1px solid rgba(99,102,241,0.3)",
+                  borderRadius: 12,
+                  padding: "8px 14px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                🔄 Clone & Re-run Task
+              </button>
             </div>
+
+            {/* Feature 1: Human-in-the-Loop Plan Inspector */}
+            <PlanInspectorBar
+              taskTitle={selectedTask.title}
+              domain={selectedTask.domain}
+              steps={[
+                { id: 1, description: selectedTask.domain === "trip" ? "Search flights to destination within budget ceiling" : selectedTask.domain === "coding" ? "Generate complete Python code algorithm" : "Verify schedule availability", tool: selectedTask.domain === "trip" ? "search_flights" : selectedTask.domain === "coding" ? "execute_code" : "check_calendar", status: "pending" },
+                { id: 2, description: selectedTask.domain === "trip" ? "Search centrally located hotel recommendations" : selectedTask.domain === "coding" ? "Execute code snippet via Polyglot REPL" : "Draft event invite", tool: selectedTask.domain === "trip" ? "search_hotels" : selectedTask.domain === "coding" ? "execute_code" : "draft_invite", status: "pending" },
+                { id: 3, description: selectedTask.domain === "trip" ? "Fetch 7-day live weather forecast from Open-Meteo REST API" : selectedTask.domain === "coding" ? "Verify memory and runtime bounds in Rust solver" : "Confirm calendar slot", tool: selectedTask.domain === "trip" ? "get_destination_weather" : "policy_check", status: "pending" },
+              ]}
+              onApproveAll={() => {}}
+              onSkipStep={() => {}}
+              onEditParameters={() => onAddTaskClick()}
+            />
 
             {/* Render per-task AssistantMessageCard explicitly bound to selectedTask */}
             <AssistantMessageCard
@@ -822,6 +858,50 @@ export default function MaestroWorkbench() {
                   </div>
                   <div style={{ fontSize: 13, color: "#64748B", fontWeight: 600, marginTop: 6 }}>
                     Today&apos;s productivity
+                  </div>
+                </div>
+
+                {/* Feature 3: ACP Financial & Token Audit Card */}
+                <div
+                  style={{
+                    background: isDark ? "#1E293B" : "#FFFFFF",
+                    borderRadius: 24,
+                    padding: 22,
+                    border: isDark ? "1.5px solid rgba(255,255,255,0.12)" : "1.5px solid #E2E8F0",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ color: "#10B981", fontSize: 16 }}>💳</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: isDark ? "#F8FAFC" : "#0F172A" }}>
+                        ACP Financial Audit
+                      </span>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "#10B981", background: "rgba(16,185,129,0.12)", padding: "2px 8px", borderRadius: 8 }}>
+                      Active Tokens
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 12, color: isDark ? "#94A3B8" : "#64748B" }}>
+                    Budget Ceiling Allocated: <strong style={{ color: isDark ? "#F8FAFC" : "#0F172A" }}>$2,500.00</strong>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div style={{ background: isDark ? "#334155" : "#E2E8F0", borderRadius: 8, height: 8, overflow: "hidden" }}>
+                    <div style={{ width: "44%", height: "100%", background: "linear-gradient(90deg, #6366F1, #10B981)", borderRadius: 8 }} />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 700 }}>
+                    <span style={{ color: "#6366F1" }}>$1,114.00 Spent</span>
+                    <span style={{ color: "#10B981" }}>$1,386.00 Remaining</span>
+                  </div>
+
+                  <div style={{ background: isDark ? "#0F172A" : "#F8FAFC", padding: 10, borderRadius: 10, border: isDark ? "1px solid #334155" : "1px solid #E2E8F0", fontSize: 11, fontFamily: "var(--font-mono)", color: isDark ? "#CBD5E1" : "#475569" }}>
+                    Last Token: <code style={{ color: "#6366F1" }}>acp_spt_4892_01</code> (Redeemed ✓)
                   </div>
                 </div>
 

@@ -23,6 +23,9 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
   // Flight & Trip fields
   const [origin, setOrigin] = useState("BOM");
   const [destination, setDestination] = useState("PAR");
+  const [multiStop, setMultiStop] = useState("HND (Tokyo)");
+  const [isMultiCity, setIsMultiCity] = useState(false);
+  const [stayNights, setStayNights] = useState("3");
   const [travelDate, setTravelDate] = useState("2026-09-15");
   const [tripBudget, setTripBudget] = useState("800");
 
@@ -40,10 +43,12 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (config.toolType === "flight") {
-      const prompt = `Search flight tickets from ${origin.trim()} to ${destination.trim()} on ${travelDate} under $${tripBudget}`;
+      const routeText = isMultiCity ? `${origin.trim()} -> ${destination.trim()} -> ${multiStop.trim()}` : `${origin.trim()} to ${destination.trim()}`;
+      const prompt = `Search flight tickets for route ${routeText} on ${travelDate} under $${tripBudget}`;
       onSubmitTask(prompt, "trip", Number(tripBudget) || 800);
     } else if (config.toolType === "full_trip") {
-      const prompt = `Plan a full trip with flight tickets and hotel stay from ${origin.trim()} to ${destination.trim()} on ${travelDate} under $${tripBudget}`;
+      const routeText = isMultiCity ? `${origin.trim()} -> ${destination.trim()} -> ${multiStop.trim()}` : `${origin.trim()} to ${destination.trim()}`;
+      const prompt = `Plan a full multi-stop trip with flight tickets and ${stayNights}-night hotel stay for route ${routeText} on ${travelDate} under $${tripBudget}`;
       onSubmitTask(prompt, "trip", Number(tripBudget) || 800);
     } else if (config.toolType === "coding") {
       const prompt = `Write ${codeLanguage} code for: ${codePrompt.trim()}`;
@@ -200,6 +205,44 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
                 </div>
               </div>
 
+              {/* Multi-City Toggle */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="checkbox"
+                  id="multicity"
+                  checked={isMultiCity}
+                  onChange={(e) => setIsMultiCity(e.target.checked)}
+                  style={{ accentColor: "#6366F1" }}
+                />
+                <label htmlFor="multicity" style={{ fontSize: 12, fontWeight: 600, color: "#334155" }}>
+                  Enable Multi-City Route (+ Leg 2 Stopover)
+                </label>
+              </div>
+
+              {isMultiCity && (
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
+                    Leg 2 Stopover City (IATA)
+                  </label>
+                  <input
+                    type="text"
+                    value={multiStop}
+                    onChange={(e) => setMultiStop(e.target.value)}
+                    placeholder="e.g. HND, DXB, LON"
+                    style={{
+                      width: "100%",
+                      border: "1.5px solid #E2E8F0",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#0F172A",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              )}
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
@@ -299,12 +342,14 @@ export const ToolParameterModal: React.FC<ToolParameterModalProps> = ({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 4 }}>
-                    Start Date
+                    Stay Nights
                   </label>
                   <input
-                    type="date"
-                    value={travelDate}
-                    onChange={(e) => setTravelDate(e.target.value)}
+                    type="number"
+                    value={stayNights}
+                    onChange={(e) => setStayNights(e.target.value)}
+                    min={1}
+                    max={14}
                     style={{
                       width: "100%",
                       border: "1.5px solid #E2E8F0",
