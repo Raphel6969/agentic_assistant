@@ -264,11 +264,19 @@ async def run_planner_loop(task_id: str):
 
         # 6. State: DONE
         state.status = TaskStatus.DONE
+        from llm import synthesize_friendly_response
+        friendly_summary = await synthesize_friendly_response(
+            task_description=state.description,
+            results=state.results,
+            budget_spent=state.budget_spent,
+            budget_ceiling=state.budget_ceiling,
+        )
+
         trace_manager.create_event(
             task_id=task_id,
             event_type=TraceEventType.PLAN_STEP,
-            output_data={"summary": state.results, "total_spent": state.budget_spent},
-            reasoning=f"Task completed successfully. Total budget spent: ${state.budget_spent:.2f} / ${state.budget_ceiling:.2f}",
+            output_data={"summary": state.results, "total_spent": state.budget_spent, "friendly_summary": friendly_summary},
+            reasoning=friendly_summary,
             confidence=1.0,
         )
 

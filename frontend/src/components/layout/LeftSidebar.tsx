@@ -1,17 +1,25 @@
 "use client";
 
 import React from "react";
-import type { Domain } from "@/lib/types";
+import type { Domain, Task } from "@/lib/types";
 import { ConstraintSlider } from "@/components/solver/ConstraintSlider";
 
 interface LeftSidebarProps {
   selectedDomain: Domain;
   onSelectDomain: (domain: Domain) => void;
+  tasksHistory: Task[];
+  onSelectTaskSession: (task: Task) => void;
+  onOpenSettings: () => void;
+  ragDocsCount: number;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   selectedDomain,
   onSelectDomain,
+  tasksHistory,
+  onSelectTaskSession,
+  onOpenSettings,
+  ragDocsCount,
 }) => {
   const domains: { id: Domain; label: string; icon: string }[] = [
     { id: "trip", label: "Trip Planning", icon: "✈️" },
@@ -28,14 +36,23 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         padding: 16,
         display: "flex",
         flexDirection: "column",
-        gap: 24,
+        gap: 20,
         overflowY: "auto",
       }}
     >
       <div>
-        <h4 style={{ fontSize: 11, color: "var(--color-text-muted)", textTransform: "uppercase", marginBottom: 12 }}>
-          Active Domain
-        </h4>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <h4 style={{ fontSize: 11, color: "var(--color-text-muted)", textTransform: "uppercase" }}>
+            Domain Mode
+          </h4>
+          <button
+            onClick={onOpenSettings}
+            title="Settings & Integrations"
+            style={{ background: "none", border: "none", color: "var(--color-text-secondary)", cursor: "pointer", fontSize: 14 }}
+          >
+            ⚙️
+          </button>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {domains.map((d) => (
             <button
@@ -65,24 +82,44 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         </div>
       </div>
 
-      <div>
-        <h4 style={{ fontSize: 11, color: "var(--color-text-muted)", textTransform: "uppercase", marginBottom: 12 }}>
-          Registered Gateway Tools
-        </h4>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
-          <div className="glass" style={{ padding: 8, borderRadius: "var(--radius-sm)" }}>
-            <div style={{ fontWeight: 600, color: "#fff" }}>search_flights</div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 11 }}>tier: read_only</div>
-          </div>
-          <div className="glass" style={{ padding: 8, borderRadius: "var(--radius-sm)" }}>
-            <div style={{ fontWeight: 600, color: "#fff" }}>search_hotels</div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 11 }}>tier: read_only</div>
-          </div>
-          <div className="glass" style={{ padding: 8, borderRadius: "var(--radius-sm)" }}>
-            <div style={{ fontWeight: 600, color: "#fff" }}>get_destination_weather</div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 11 }}>tier: read_only (Open-Meteo REST)</div>
+      {/* Persistent Chat Sessions History */}
+      {tasksHistory.length > 0 && (
+        <div>
+          <h4 style={{ fontSize: 11, color: "var(--color-text-muted)", textTransform: "uppercase", marginBottom: 8 }}>
+            Recent Assistant Threads
+          </h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {tasksHistory.slice(0, 5).map((t) => (
+              <button
+                key={t.task_id}
+                onClick={() => onSelectTaskSession(t)}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid var(--color-border)",
+                  color: "var(--color-text-secondary)",
+                  fontSize: 12,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  cursor: "pointer",
+                }}
+              >
+                💬 {t.description}
+              </button>
+            ))}
           </div>
         </div>
+      )}
+
+      {/* RAG Knowledge Store Indicator */}
+      <div className="glass" style={{ padding: 10, borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+        <span style={{ color: "var(--color-text-secondary)" }}>RAG Knowledge Base</span>
+        <span style={{ fontFamily: "var(--font-mono)", color: "var(--color-emerald)", fontWeight: 600 }}>
+          {ragDocsCount} Docs
+        </span>
       </div>
 
       <div style={{ marginTop: "auto" }}>

@@ -6,8 +6,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_PLANNER_WS_URL=ws://planner:8000
-      - NEXT_PUBLIC_PLANNER_URL=http://planner:8000
+      - NEXT_PUBLIC_PLANNER_WS_URL=ws://localhost:8000
+      - NEXT_PUBLIC_PLANNER_URL=http://localhost:8000
     depends_on:
       - planner
     networks:
@@ -24,6 +24,8 @@ services:
     environment:
       - GATEWAY_URL=http://gateway:8080
       - SOLVER_URL=http://solver:8090
+      - POSTGRES_URL=postgresql://localhost:aeri3107@postgres:5432/airline_db
+      - FAST_MODEL=llama-3.1-8b-instant
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,14 +63,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: agent
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: airline_db
+      POSTGRES_USER: localhost
+      POSTGRES_PASSWORD: aeri3107
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U localhost -d airline_db"]
       interval: 5s
       timeout: 5s
       retries: 5

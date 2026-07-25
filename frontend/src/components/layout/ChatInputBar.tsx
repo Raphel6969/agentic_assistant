@@ -7,12 +7,14 @@ interface ChatInputBarProps {
   onStartTask: (description: string, domain: Domain, budget: number) => void;
   isLoading: boolean;
   selectedDomain: Domain;
+  onUploadDoc?: (docName: string, text: string) => void;
 }
 
 export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   onStartTask,
   isLoading,
   selectedDomain,
+  onUploadDoc,
 }) => {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState(500);
@@ -20,7 +22,24 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim() || isLoading) return;
-    onStartTask(description.trim(), selectedDomain, budget);
+
+    const taskText = description.trim();
+    setDescription(""); // Auto-clear input immediately upon submit!
+    onStartTask(taskText, selectedDomain, budget);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        if (onUploadDoc) {
+          onUploadDoc(file.name, text);
+        }
+      };
+      reader.readAsText(file);
+    }
   };
 
   return (
@@ -32,9 +51,9 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
         alignItems: "center",
         padding: "0 20px",
         height: "var(--input-bar-height)",
-        gap: 16,
+        gap: 12,
         borderTop: "var(--glass-border)",
-        background: "rgba(10, 10, 15, 0.8)",
+        background: "rgba(10, 10, 15, 0.9)",
       }}
     >
       <form
@@ -46,22 +65,43 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
           width: "100%",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Budget: $</span>
+        <label
+          title="Upload RAG document (.txt, .md, .json)"
+          style={{
+            cursor: "pointer",
+            fontSize: 16,
+            padding: "8px 10px",
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          📎
+          <input
+            type="file"
+            accept=".txt,.md,.json,.pdf"
+            onChange={handleFileUpload}
+            style={{ display: "none" }}
+          />
+        </label>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 11, color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>$</span>
           <input
             type="number"
             value={budget}
             onChange={(e) => setBudget(Number(e.target.value))}
             min={50}
             max={5000}
+            title="Max Task Budget Ceiling"
             style={{
-              width: 70,
+              width: 65,
               background: "rgba(255,255,255,0.06)",
               border: "1px solid var(--color-border)",
               borderRadius: "var(--radius-sm)",
               padding: "6px 8px",
               color: "#fff",
-              fontSize: 13,
+              fontSize: 12,
               fontFamily: "var(--font-mono)",
               outline: "none",
             }}
@@ -76,8 +116,10 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
             selectedDomain === "trip"
               ? "Plan a trip from BOM to CDG Paris under $600..."
               : selectedDomain === "scheduling"
-              ? "Find an open slot next week for a 3-person team sync..."
-              : "Search product pricing trade-offs across sources..."
+              ? "Find a free slot next week for team sync..."
+              : selectedDomain === "research"
+              ? "Compare prices for Sony headphones..."
+              : "Ask anything — write Python code, plan trip, schedule meeting..."
           }
           disabled={isLoading}
           style={{
@@ -102,7 +144,7 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
             color: "#fff",
             border: "none",
             borderRadius: "var(--radius-md)",
-            padding: "12px 24px",
+            padding: "12px 22px",
             fontFamily: "var(--font-sans)",
             fontSize: 14,
             fontWeight: 600,
@@ -110,10 +152,10 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({
             transition: "all var(--duration-fast) var(--ease-standard)",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 6,
           }}
         >
-          {isLoading ? "Executing..." : "Execute Task →"}
+          {isLoading ? "Thinking..." : "Send →"}
         </button>
       </form>
     </footer>

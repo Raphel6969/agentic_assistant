@@ -126,4 +126,6 @@ func (r *Registry) registerDefaults() {
 	RegisterACPCheckoutTool(r)
 	RegisterResearchTools(r)
 	RegisterFailureInjectionTools(r)
+	RegisterCodingTools(r)
+	RegisterRAGTools(r)
 }
