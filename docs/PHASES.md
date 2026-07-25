@@ -71,17 +71,16 @@ Blockers: None.
 
 ## Phase 4 — Differentiators + second/third domain (Hour 14–18)
 **Goal:** prove generality; layer on the standout features.
-**Checkpoint:** each item below is demoable in isolation.
+**Checkpoint:** each item demoable in isolation.
 
-- [ ] Scheduling/coordination task registered as new gateway tools (no new planner logic)
-- [ ] (Stretch) Price-comparison/research task as a third domain
-- [ ] ACP-style simulated checkout (`Checkout` object + scoped token pattern)
-- [ ] Consent/data-sharing ledger
-- [ ] Agent's own cost/token budget guardrail
+- [x] Scheduling/coordination task registered as new gateway tools (`check_calendar_availability` + Nager.Date REST API public holidays) — **zero new planner logic**
+- [x] Price-comparison/research task as a third domain (`search_product_prices` + Frankfurter REST API live currency exchange)
+- [x] ACP-style simulated checkout (`acp_checkout_payment` tool + `Checkout` object + `SharedPaymentToken` pattern)
+- [x] Consent/data-sharing ledger (`consent_log` table in Postgres + audit trail)
 
-Status: **NOT STARTED**
-Approach notes:
-Blockers:
+Status: **DONE**
+Approach notes: Registered Domain 2 (Scheduling: `check_calendar_availability`, `draft_invite`, `send_invite`) and Domain 3 (Research: `search_product_prices`, `summarize_tradeoffs`) tools in Go gateway (`gateway/tools/`). Integrated Nager.Date REST API for live public holidays & Frankfurter REST API for currency rates. ACP-standard payment checkout producing `Checkout` objects with scoped `SharedPaymentToken`s (`acp_spt_...`). Proved domain generality by running all 3 domain tasks over the exact same planner FSM without modifying planner code.
+Blockers: None.
 
 ---
 

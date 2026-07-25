@@ -122,4 +122,7 @@ func (r *Registry) registerDefaults() {
 	RegisterFlightsTool(r)
 	RegisterHotelsTool(r)
 	RegisterWeatherTool(r)
+	RegisterSchedulingTools(r)
+	RegisterACPCheckoutTool(r)
+	RegisterResearchTools(r)
 }
