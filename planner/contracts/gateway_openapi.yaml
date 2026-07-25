@@ -1,0 +1,120 @@
+openapi: "3.1.0"
+info:
+  title: Planner ↔ Gateway Contract
+  version: "0.1.0"
+  description: |
+    Contract-first stub. Both sides build against this.
+    If you change this, update the other side's owner first — per RULES.md.
+
+paths:
+  /tools:
+    get:
+      summary: List all registered tools
+      operationId: listTools
+      responses:
+        "200":
+          description: All registered gateway tools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ToolDefinition"
+
+  /tools/{toolName}/invoke:
+    post:
+      summary: Invoke a tool by name
+      operationId: invokeTool
+      parameters:
+        - name: toolName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToolInvokeRequest"
+      responses:
+        "200":
+          description: Tool result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolInvokeResponse"
+        "503":
+          description: Tool failed after retries — circuit breaker open
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolError"
+
+components:
+  schemas:
+    ToolDefinition:
+      type: object
+      required: [name, input_schema, output_schema, cost_estimate, risk_tier]
+      properties:
+        name:
+          type: string
+          example: search_flights
+        input_schema:
+          type: object
+          description: JSON Schema for tool inputs
+        output_schema:
+          type: object
+          description: JSON Schema for tool outputs
+        cost_estimate:
+          type: number
+          description: Estimated cost in USD per call
+          example: 0.0
+        risk_tier:
+          type: string
+          enum: [read_only, reversible, irreversible]
+
+    ToolInvokeRequest:
+      type: object
+      required: [task_id, input]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        input:
+          type: object
+          description: Tool-specific input matching the tool's input_schema
+
+    ToolInvokeResponse:
+      type: object
+      required: [task_id, tool, output, latency_ms, cost_actual]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        tool:
+          type: string
+        output:
+          type: object
+        latency_ms:
+          type: integer
+        cost_actual:
+          type: number
+        fallback_used:
+          type: boolean
+          default: false
+
+    ToolError:
+      type: object
+      required: [tool, error, retries_attempted, circuit_breaker_open]
+      properties:
+        tool:
+          type: string
+        error:
+          type: string
+        retries_attempted:
+          type: integer
+        circuit_breaker_open:
+          type: boolean
+        fallback_attempted:
+          type: boolean

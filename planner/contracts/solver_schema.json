@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Planner ↔ Solver Contract",
+  "description": "Schema for all messages between planner and the Rust guardrail/solver service. Contract-first — change here first, then update both sides.",
+  "definitions": {
+    "GuardrailRequest": {
+      "type": "object",
+      "required": ["task_id", "action_name", "risk_tier", "cost_estimate", "budget_state"],
+      "properties": {
+        "task_id": { "type": "string", "format": "uuid" },
+        "action_name": { "type": "string", "description": "Tool or action being proposed" },
+        "risk_tier": {
+          "type": "string",
+          "enum": ["read_only", "reversible", "irreversible"]
+        },
+        "cost_estimate": { "type": "number", "minimum": 0 },
+        "budget_state": {
+          "type": "object",
+          "required": ["ceiling", "spent"],
+          "properties": {
+            "ceiling": { "type": "number" },
+            "spent": { "type": "number" }
+          }
+        },
+        "input_payload": {
+          "type": "object",
+          "description": "The full tool input — stored for audit trail"
+        }
+      }
+    },
+
+    "GuardrailResponse": {
+      "type": "object",
+      "required": ["task_id", "action_name", "result"],
+      "properties": {
+        "task_id": { "type": "string", "format": "uuid" },
+        "action_name": { "type": "string" },
+        "result": {
+          "type": "string",
+          "enum": ["allowed", "blocked", "requires_approval"],
+          "description": "allowed=proceed, blocked=hard stop planner must replan, requires_approval=show modal"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Human-readable explanation for blocked/requires_approval decisions"
+        },
+        "budget_remaining": { "type": "number" }
+      }
+    },
+
+    "RankRequest": {
+      "type": "object",
+      "required": ["task_id", "options", "weights"],
+      "properties": {
+        "task_id": { "type": "string", "format": "uuid" },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "price", "convenience_score", "flexibility_score"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "price": { "type": "number" },
+              "convenience_score": { "type": "number", "minimum": 0, "maximum": 1 },
+              "flexibility_score": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        "weights": {
+          "type": "object",
+          "required": ["price", "convenience", "flexibility"],
+          "properties": {
+            "price": { "type": "number", "minimum": 0, "maximum": 1 },
+            "convenience": { "type": "number", "minimum": 0, "maximum": 1 },
+            "flexibility": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+
+    "RankResponse": {
+      "type": "object",
+      "required": ["task_id", "ranked_ids"],
+      "properties": {
+        "task_id": { "type": "string", "format": "uuid" },
+        "ranked_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Option IDs sorted best-first by weighted score"
+        },
+        "scores": {
+          "type": "object",
+          "description": "id → score mapping for UI display"
+        }
+      }
+    }
+  }
+}
