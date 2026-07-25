@@ -26,16 +26,16 @@ Blockers: None.
 
 ## Phase 1 — Core loop (Hour 1–4)
 **Goal:** one working end-to-end request on the trip domain.
-**Checkpoint:** "find cheapest flight" completes end-to-end; UI can be ugly.
+**Checkpoint:** "find cheapest flight" completes end-to-end; UI connected to live WebSocket trace.
 
-- [ ] Python planner: explicit state machine (plan → dispatch → verify → replan-or-continue)
-- [ ] 2–3 mocked tools wired (deterministic seeded flight/hotel data)
-- [ ] Go gateway: fan-out to tool APIs, one real concurrent call
-- [ ] Bare-bones Next.js chat UI (input box, raw response render)
+- [x] Python planner: explicit state machine (plan → dispatch → verify → replan-or-continue)
+- [x] 2–3 mocked tools wired (deterministic seeded flight/hotel data + 1 real Open-Meteo REST weather API)
+- [x] Go gateway: fan-out to tool APIs, tool registry interface, tool invocation endpoint
+- [x] Next.js chat UI & Flight Recorder timeline connected to Python planner via WebSocket trace stream
 
-Status: **NOT STARTED**
-Approach notes:
-Blockers:
+Status: **DONE**
+Approach notes: Hand-rolled state machine in FastAPI (`planner/state_machine.py`), LLM client with Groq/OpenRouter & heuristic fallbacks (`planner/llm.py`), Go gateway tool registry with 3 tools (`gateway/tools/`), Next.js 14 glassmorphism Flight Recorder timeline UI with live WS stream (`frontend/src/hooks/useTraceStream.ts`).
+Blockers: None.
 
 ---
 

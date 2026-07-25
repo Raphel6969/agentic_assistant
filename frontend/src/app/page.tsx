@@ -1,9 +1,26 @@
-/**
- * Main page — 5-panel layout shell.
- * Phase 0: structural skeleton with correct proportions.
- * Phase 3: full Flight Recorder, detail panel, and animations wired in.
- */
+"use client";
+
+import React, { useState } from "react";
+import type { Domain } from "@/lib/types";
+import { useTraceStream } from "@/hooks/useTraceStream";
+import { Header } from "@/components/layout/Header";
+import { LeftSidebar } from "@/components/layout/LeftSidebar";
+import { ChatInputBar } from "@/components/layout/ChatInputBar";
+import { FlightRecorder } from "@/components/trace/FlightRecorder";
+import { EventDetailPanel } from "@/components/trace/EventDetailPanel";
+
 export default function Home() {
+  const [selectedDomain, setSelectedDomain] = useState<Domain>("trip");
+  const {
+    currentTask,
+    events,
+    selectedEvent,
+    setSelectedEvent,
+    isLoading,
+    error,
+    startTask,
+  } = useTraceStream();
+
   return (
     <div
       style={{
@@ -15,118 +32,48 @@ export default function Home() {
         background: "var(--color-base)",
       }}
     >
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header
-        className="glass"
-        style={{
-          gridColumn: "1 / -1",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          gap: 12,
-          borderBottom: "var(--glass-border)",
-          zIndex: 10,
-        }}
-      >
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: 15,
-            background: "linear-gradient(135deg, var(--color-indigo), var(--color-emerald))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Agentic Assistant
-        </span>
-        <span
-          style={{
-            marginLeft: "auto",
-            fontSize: 12,
-            color: "var(--color-text-muted)",
-            fontFamily: "var(--font-mono)",
-          }}
-        >
-          Phase 0 — Scaffold
-        </span>
-      </header>
+      <Header task={currentTask} />
 
-      {/* ── Left Sidebar ───────────────────────────────────────────────── */}
-      <aside
-        className="glass"
-        style={{
-          gridRow: "2 / 3",
-          borderRight: "var(--glass-border)",
-          padding: 16,
-          overflowY: "auto",
-        }}
-      >
-        <p style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
-          Sidebar — Phase 3
-        </p>
-      </aside>
+      <LeftSidebar
+        selectedDomain={selectedDomain}
+        onSelectDomain={setSelectedDomain}
+      />
 
-      {/* ── Flight Recorder (main stage) ───────────────────────────────── */}
-      <main
-        style={{
-          gridRow: "2 / 3",
-          overflowY: "auto",
-          padding: 24,
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
-        <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>
-          Flight Recorder trace timeline will appear here — Phase 3
-        </p>
-      </main>
+      <FlightRecorder
+        events={events}
+        selectedEvent={selectedEvent}
+        onSelectEvent={setSelectedEvent}
+      />
 
-      {/* ── Chat Input Bar ─────────────────────────────────────────────── */}
-      <footer
-        className="glass"
-        style={{
-          gridColumn: "1 / -1",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          gap: 12,
-          borderTop: "var(--glass-border)",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Plan a 3-day trip to Paris under $800…"
+      <EventDetailPanel
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
+
+      <ChatInputBar
+        onStartTask={(desc, domain, budget) => startTask(desc, domain, budget)}
+        isLoading={isLoading}
+        selectedDomain={selectedDomain}
+      />
+
+      {error && (
+        <div
           style={{
-            flex: 1,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-md)",
-            padding: "10px 14px",
-            color: "var(--color-text-primary)",
-            fontFamily: "var(--font-sans)",
-            fontSize: 14,
-            outline: "none",
-            transition: "border-color var(--duration-fast) var(--ease-standard)",
-          }}
-        />
-        <button
-          style={{
-            background: "var(--color-indigo)",
+            position: "fixed",
+            bottom: 95,
+            right: 20,
+            background: "rgba(244, 63, 94, 0.9)",
             color: "#fff",
-            border: "none",
+            padding: "10px 16px",
             borderRadius: "var(--radius-md)",
-            padding: "10px 20px",
-            fontFamily: "var(--font-sans)",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
+            fontSize: 13,
+            zIndex: 100,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
           }}
         >
-          Send
-        </button>
-      </footer>
+          {error}
+        </div>
+      )}
     </div>
   );
 }
