@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import type { Domain } from "@/lib/types";
+import type { Domain, Task, TraceEvent } from "@/lib/types";
 import { useTraceStream } from "@/hooks/useTraceStream";
 import { VoiceWidget } from "@/components/workbench/VoiceWidget";
 import { AssistantMessageCard } from "@/components/chat/AssistantMessageCard";
@@ -14,24 +14,25 @@ import { NumberTicker } from "@/components/magicui/NumberTicker";
 import { GeneralChatBot } from "@/components/workbench/GeneralChatBot";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-type NavTab = "dashboard" | "tasks" | "tools" | "config";
+type NavTab = "dashboard" | "tasks" | "chat" | "tools" | "config";
 
-export interface TaskItem {
+export interface LocalTaskItem {
   id: string;
   title: string;
   domain: Domain;
   status: string;
   budget: number;
-  messages: Array<{ role: "user" | "ai"; text: string }>;
   created_at: string;
+  task_id?: string;
 }
 
 // ── Header Navigation TabBar ───────────────────────────────────────────────────
 function TabBar({ active, onChange }: { active: NavTab; onChange: (t: NavTab) => void }) {
   const tabs: { id: NavTab; label: string; emoji: string }[] = [
     { id: "dashboard", label: "Dashboard", emoji: "🏠" },
-    { id: "tasks", label: "Tasks Window", emoji: "📋" },
-    { id: "tools", label: "Tools & AI Chat", emoji: "🛠️" },
+    { id: "tasks", label: "Tasks", emoji: "📋" },
+    { id: "chat", label: "Chat Assistant", emoji: "💬" },
+    { id: "tools", label: "Tools", emoji: "🛠️" },
     { id: "config", label: "Config", emoji: "⚙️" },
   ];
   return (
@@ -42,8 +43,8 @@ function TabBar({ active, onChange }: { active: NavTab; onChange: (t: NavTab) =>
         gap: 8,
         padding: "12px 36px",
         borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
-        background: "rgba(255, 255, 255, 0.85)",
-        backdropFilter: "blur(12px)",
+        background: "rgba(255, 255, 255, 0.9)",
+        backdropFilter: "blur(16px)",
       }}
     >
       {tabs.map((t) => (
@@ -73,63 +74,28 @@ function TabBar({ active, onChange }: { active: NavTab; onChange: (t: NavTab) =>
   );
 }
 
-// ── Floating Tasks Window Modal ─────────────────────────────────────────────────
-function TaskWindowModal({
-  isOpen,
-  onClose,
+// ── Dedicated Tasks Panel Component ─────────────────────────────────────────────
+function DedicatedTasksPanel({
   tasks,
-  selectedTaskId,
+  selectedTask,
   onSelectTask,
   onAddTaskClick,
+  currentTask,
+  events,
+  onOpenACPBankModal,
+  onSelectEvent,
+  selectedEventId,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  tasks: TaskItem[];
-  selectedTaskId: string | null;
-  onSelectTask: (t: TaskItem) => void;
+  tasks: LocalTaskItem[];
+  selectedTask: LocalTaskItem | null;
+  onSelectTask: (t: LocalTaskItem) => void;
   onAddTaskClick: () => void;
+  currentTask: Task | null;
+  events: TraceEvent[];
+  onOpenACPBankModal: (title: string, amount: number) => void;
+  onSelectEvent: (event: TraceEvent) => void;
+  selectedEventId?: string;
 }) {
-  const [localTasks, setLocalTasks] = useState<TaskItem[]>(tasks);
-  const [chatInput, setChatInput] = useState("");
-  const [activeTask, setActiveTask] = useState<TaskItem | null>(null);
-
-  React.useEffect(() => {
-    setLocalTasks(tasks);
-    if (selectedTaskId) {
-      const found = tasks.find((t) => t.id === selectedTaskId);
-      if (found) setActiveTask(found);
-    } else if (tasks.length > 0 && !activeTask) {
-      setActiveTask(tasks[0]);
-    }
-  }, [tasks, selectedTaskId]);
-
-  if (!isOpen) return null;
-
-  const currentSelected = activeTask || (localTasks.length > 0 ? localTasks[0] : null);
-
-  const sendChat = () => {
-    if (!chatInput.trim() || !currentSelected) return;
-    const msg = chatInput.trim();
-    setChatInput("");
-
-    const userMsg = { role: "user" as const, text: msg };
-    const aiMsg = { role: "ai" as const, text: `Got it! Continuing planning for "${msg}" — updating your task state! 🚀` };
-
-    setLocalTasks((prev) =>
-      prev.map((t) =>
-        t.id === currentSelected.id
-          ? { ...t, messages: [...t.messages, userMsg, aiMsg] }
-          : t
-      )
-    );
-
-    setActiveTask((prev) =>
-      prev && prev.id === currentSelected.id
-        ? { ...prev, messages: [...prev.messages, userMsg, aiMsg] }
-        : prev
-    );
-  };
-
   const domainColor: Record<string, string> = {
     trip: "#3B82F6",
     coding: "#10B981",
@@ -141,220 +107,152 @@ function TaskWindowModal({
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 350,
-        background: "rgba(15, 23, 42, 0.65)",
-        backdropFilter: "blur(10px)",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
+        gap: 0,
+        height: "calc(100vh - 160px)",
+        minHeight: 520,
+        background: "#FFFFFF",
+        borderRadius: 24,
+        margin: "24px 36px",
+        border: "1px solid #E2E8F0",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+        overflow: "hidden",
       }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
+      {/* Left Column: Task List */}
       <div
         style={{
-          background: "#FFFFFF",
-          borderRadius: 24,
-          width: "100%",
-          maxWidth: 960,
-          height: 600,
+          width: 320,
+          borderRight: "1px solid #E2E8F0",
+          background: "#F8FAFC",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 25px 80px rgba(0,0,0,0.25)",
-          overflow: "hidden",
-          position: "relative",
-          fontFamily: "var(--font-sans), sans-serif",
-          border: "1px solid rgba(255,255,255,0.8)",
         }}
       >
-        {/* Window Top Bar */}
         <div
           style={{
-            background: "linear-gradient(135deg, #0F172A, #1E293B)",
-            padding: "16px 24px",
+            padding: "20px 24px",
+            borderBottom: "1px solid #E2E8F0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 20 }}>📋</span>
-            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#FFFFFF" }}>Tasks & Planning Window</h3>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              onClick={onAddTaskClick}
-              style={{
-                background: "linear-gradient(135deg, #6366F1, #4F46E5)",
-                color: "#FFFFFF",
-                border: "none",
-                borderRadius: 20,
-                padding: "6px 16px",
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              + New Task
-            </button>
-            <button
-              onClick={onClose}
-              style={{
-                background: "rgba(255,255,255,0.15)",
-                border: "none",
-                borderRadius: "50%",
-                width: 30,
-                height: 30,
-                color: "#FFFFFF",
-                fontSize: 16,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              ×
-            </button>
-          </div>
-        </div>
-
-        {/* Window Body: 2 Columns */}
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          {/* Left: Task List */}
-          <div
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>My Active Tasks</h3>
+          <button
+            onClick={onAddTaskClick}
             style={{
-              width: 340,
-              borderRight: "1px solid #E2E8F0",
-              background: "#F8FAFC",
-              display: "flex",
-              flexDirection: "column",
-              overflowY: "auto",
+              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 20,
+              padding: "6px 14px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
             }}
           >
-            {localTasks.length === 0 ? (
-              <div style={{ padding: 32, textAlign: "center", color: "#64748B", fontSize: 13 }}>
-                No active tasks yet. Click "+ New Task" to create one!
-              </div>
-            ) : (
-              localTasks.map((t) => (
-                <div
-                  key={t.id}
-                  onClick={() => { setActiveTask(t); onSelectTask(t); }}
-                  style={{
-                    padding: "16px 20px",
-                    cursor: "pointer",
-                    background: currentSelected?.id === t.id ? "#FFFFFF" : "transparent",
-                    borderLeft: currentSelected?.id === t.id ? "4px solid #6366F1" : "4px solid transparent",
-                    borderBottom: "1px solid #F1F5F9",
-                    transition: "all 150ms ease",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", flex: 1, marginRight: 8 }}>
-                      {t.title}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        background: domainColor[t.domain] || "#64748B",
-                        color: "#FFFFFF",
-                        padding: "2px 8px",
-                        borderRadius: 8,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {t.domain}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
-                    {t.status}
-                    {t.budget > 0 && <span>· ${t.budget}</span>}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+            + New Task
+          </button>
+        </div>
 
-          {/* Right: Selected Task Chat Stream */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#FFFFFF" }}>
-            {currentSelected ? (
-              <>
-                <div style={{ padding: "16px 24px", borderBottom: "1px solid #E2E8F0", background: "#FFFFFF" }}>
-                  <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>{currentSelected.title}</h4>
-                  <span style={{ fontSize: 12, color: "#64748B" }}>Continue planning and executing this task</span>
-                </div>
-
-                <div style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
-                  {currentSelected.messages.length === 0 && (
-                    <div style={{ textAlign: "center", color: "#64748B", fontSize: 13, paddingTop: 40 }}>
-                      Task created! Type below to continue planning or asking questions.
-                    </div>
-                  )}
-                  {currentSelected.messages.map((m, i) => (
-                    <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "75%" }}>
-                      <div
-                        style={{
-                          background: m.role === "user" ? "#6366F1" : "#F1F5F9",
-                          color: m.role === "user" ? "#FFFFFF" : "#0F172A",
-                          borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                          padding: "12px 16px",
-                          fontSize: 13,
-                          lineHeight: 1.5,
-                          border: m.role === "ai" ? "1px solid #E2E8F0" : "none",
-                        }}
-                      >
-                        {m.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ padding: "16px 24px", borderTop: "1px solid #E2E8F0", display: "flex", gap: 10 }}>
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendChat()}
-                    placeholder="Continue planning or refine instructions..."
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {tasks.length === 0 ? (
+            <div style={{ padding: 32, textAlign: "center", color: "#64748B", fontSize: 13 }}>
+              No tasks created yet. Click "+ New Task" to start one!
+            </div>
+          ) : (
+            tasks.map((t) => (
+              <div
+                key={t.id}
+                onClick={() => onSelectTask(t)}
+                style={{
+                  padding: "16px 20px",
+                  cursor: "pointer",
+                  background: selectedTask?.id === t.id ? "#FFFFFF" : "transparent",
+                  borderLeft: selectedTask?.id === t.id ? "4px solid #6366F1" : "4px solid transparent",
+                  borderBottom: "1px solid #F1F5F9",
+                  transition: "all 150ms ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", flex: 1, marginRight: 8 }}>
+                    {t.title}
+                  </span>
+                  <span
                     style={{
-                      flex: 1,
-                      border: "1.5px solid #E2E8F0",
-                      borderRadius: 24,
-                      padding: "12px 18px",
-                      fontSize: 13,
-                      color: "#0F172A",
-                      outline: "none",
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "#6366F1")}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = "#E2E8F0")}
-                  />
-                  <button
-                    onClick={sendChat}
-                    style={{
-                      background: "linear-gradient(135deg, #6366F1, #4F46E5)",
+                      fontSize: 10,
+                      fontWeight: 800,
+                      background: domainColor[t.domain] || "#64748B",
                       color: "#FFFFFF",
-                      border: "none",
-                      borderRadius: 24,
-                      padding: "12px 24px",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
+                      padding: "2px 8px",
+                      borderRadius: 8,
+                      textTransform: "capitalize",
                     }}
                   >
-                    Send →
-                  </button>
+                    {t.domain}
+                  </span>
                 </div>
-              </>
+                <div style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
+                  {t.status}
+                  {t.budget > 0 && <span>· ${t.budget}</span>}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right Column: Task Output & Execution Chat (Includes Flight Tickets, Code Snippets, Trace events!) */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#FFFFFF", overflowY: "auto" }}>
+        {selectedTask ? (
+          <div style={{ padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Selected Task Top Banner */}
+            <div style={{ borderBottom: "1px solid #E2E8F0", paddingBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <span style={{ fontSize: 20 }}>📌</span>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0F172A" }}>{selectedTask.title}</h3>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: "#64748B" }}>
+                Domain: <strong style={{ color: "#0F172A", textTransform: "capitalize" }}>{selectedTask.domain}</strong> · Status: <span style={{ color: "#10B981", fontWeight: 700 }}>Executing</span>
+              </p>
+            </div>
+
+            {/* Live Assistant Message Card with Flight Tickets, Code Output & Trace Events */}
+            {currentTask ? (
+              <AssistantMessageCard
+                task={currentTask}
+                events={events}
+                onOpenACPBankModal={onOpenACPBankModal}
+                onSelectEvent={onSelectEvent}
+                selectedEventId={selectedEventId}
+              />
             ) : (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B", fontSize: 14 }}>
-                Select a task on the left to view its chat
+              <div
+                style={{
+                  background: "#F8FAFC",
+                  border: "1px dashed #CBD5E1",
+                  borderRadius: 20,
+                  padding: 36,
+                  textAlign: "center",
+                  color: "#64748B",
+                }}
+              >
+                <span style={{ fontSize: 32, display: "block", marginBottom: 12 }}>🚀</span>
+                <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0F172A" }}>Task Initiated: {selectedTask.title}</h4>
+                <p style={{ margin: "8px 0 0", fontSize: 13 }}>
+                  Maestro AI agents are executing sub-task steps for this task. Results will appear right here!
+                </p>
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748B", gap: 12 }}>
+            <span style={{ fontSize: 48 }}>📋</span>
+            <p style={{ fontSize: 14, margin: 0, fontWeight: 600 }}>Select a task on the left to view flight tickets, code output, or trace logs.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -368,7 +266,7 @@ function AddTaskModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onAddTask: (t: TaskItem) => void;
+  onAddTask: (t: LocalTaskItem) => void;
 }) {
   const [title, setTitle] = useState("");
   const [domain, setDomain] = useState<Domain>("trip");
@@ -384,7 +282,6 @@ function AddTaskModal({
       domain,
       status: "running",
       budget: Number(budget) || 0,
-      messages: [{ role: "ai", text: `Task "${title.trim()}" initialized! Ready to execute.` }],
       created_at: new Date().toISOString(),
     });
     setTitle("");
@@ -575,9 +472,8 @@ export default function MaestroWorkbench() {
   const [navTab, setNavTab] = useState<NavTab>("dashboard");
   const [showSettings, setShowSettings] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
-  const [showTaskWindow, setShowTaskWindow] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [selectedTask, setSelectedTask] = useState<LocalTaskItem | null>(null);
+  const [tasks, setTasks] = useState<LocalTaskItem[]>([]);
   const [acpModalState, setAcpModalState] = useState<{ isOpen: boolean; title: string; amount: number }>({
     isOpen: false,
     title: "",
@@ -588,6 +484,7 @@ export default function MaestroWorkbench() {
 
   const userName = user?.name || "Marco";
 
+  // Start task handler
   const handleStartTask = useCallback(
     async (description: string, domain: Domain | string = "trip", budget: number = 0) => {
       await startTask(description, domain as Domain, budget);
@@ -595,36 +492,28 @@ export default function MaestroWorkbench() {
     [startTask]
   );
 
-  const handleAddTask = (newTask: TaskItem) => {
+  // Add task handler: immediately launches task and switches to Tasks view
+  const handleAddTask = (newTask: LocalTaskItem) => {
     setTasks((prev) => [newTask, ...prev]);
-    setSelectedTaskId(newTask.id);
+    setSelectedTask(newTask);
     handleStartTask(newTask.title, newTask.domain, newTask.budget);
+    setNavTab("tasks");
   };
 
   // Launch a tool directly from Tools Bento Grid
   const handleToolClick = (toolTitle: string, domain: Domain, sampleDesc: string, defaultBudget: number = 0) => {
-    const newTask: TaskItem = {
+    const newTask: LocalTaskItem = {
       id: crypto.randomUUID(),
       title: sampleDesc,
       domain,
       status: "running",
       budget: defaultBudget,
-      messages: [{ role: "ai", text: `Tool "${toolTitle}" activated! Running "${sampleDesc}"...` }],
       created_at: new Date().toISOString(),
     };
     setTasks((prev) => [newTask, ...prev]);
-    setSelectedTaskId(newTask.id);
+    setSelectedTask(newTask);
     handleStartTask(sampleDesc, domain, defaultBudget);
-    setShowTaskWindow(true);
-  };
-
-  // Handle nav tab switching: clicking "tasks" tab pops open the window overlay
-  const handleTabChange = (tab: NavTab) => {
-    if (tab === "tasks") {
-      setShowTaskWindow(true);
-    } else {
-      setNavTab(tab);
-    }
+    setNavTab("tasks");
   };
 
   return (
@@ -636,7 +525,7 @@ export default function MaestroWorkbench() {
         color: "#1E293B",
       }}
     >
-      {/* Outer Container */}
+      {/* Outer Container Frame */}
       <div
         style={{
           maxWidth: 1440,
@@ -648,7 +537,7 @@ export default function MaestroWorkbench() {
           position: "relative",
         }}
       >
-        {/* Sticky Top Header */}
+        {/* Sticky Top Header Bar */}
         <header
           style={{
             position: "sticky",
@@ -678,7 +567,7 @@ export default function MaestroWorkbench() {
             </span>
           </div>
 
-          {/* Right Header Actions */}
+          {/* Header Right Actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <button
               onClick={() => setShowAddTask(true)}
@@ -741,10 +630,10 @@ export default function MaestroWorkbench() {
           </div>
         </header>
 
-        {/* Tab Bar */}
-        <TabBar active={navTab} onChange={handleTabChange} />
+        {/* Tab Bar with Dashboard, Tasks, Chat, Tools, Config */}
+        <TabBar active={navTab} onChange={setNavTab} />
 
-        {/* ── DASHBOARD TAB ── */}
+        {/* ── 1. DASHBOARD TAB ── */}
         {navTab === "dashboard" && (
           <div style={{ padding: "24px 36px" }}>
             {/* Greeting Header */}
@@ -768,25 +657,6 @@ export default function MaestroWorkbench() {
               </div>
 
               <div style={{ display: "flex", gap: 12 }}>
-                <button
-                  onClick={() => setShowTaskWindow(true)}
-                  style={{
-                    background: "#FFFFFF",
-                    color: "#0F172A",
-                    border: "1.5px solid rgba(0,0,0,0.1)",
-                    borderRadius: 24,
-                    padding: "12px 20px",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  📋 Open Tasks Window ({tasks.length})
-                </button>
-
                 <button
                   onClick={() => setShowAddTask(true)}
                   style={{
@@ -872,7 +742,19 @@ export default function MaestroWorkbench() {
                 </div>
 
                 {/* Voice Widget */}
-                <VoiceWidget onSpeechInput={(text) => handleStartTask(text)} />
+                <VoiceWidget
+                  onSpeechInput={(text) => {
+                    const newTask: LocalTaskItem = {
+                      id: crypto.randomUUID(),
+                      title: text,
+                      domain: "trip",
+                      status: "running",
+                      budget: 500,
+                      created_at: new Date().toISOString(),
+                    };
+                    handleAddTask(newTask);
+                  }}
+                />
               </div>
 
               {/* MIDDLE COLUMN: Task Cards & Live AI Execution */}
@@ -942,7 +824,17 @@ export default function MaestroWorkbench() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
                     <ShimmerButton
-                      onClick={() => handleStartTask("Review design of VinTeX main page and validate layout metrics", "coding", 0)}
+                      onClick={() => {
+                        const newTask: LocalTaskItem = {
+                          id: crypto.randomUUID(),
+                          title: "Review design of VinTeX main page and validate layout metrics",
+                          domain: "coding",
+                          status: "running",
+                          budget: 0,
+                          created_at: new Date().toISOString(),
+                        };
+                        handleAddTask(newTask);
+                      }}
                       background="#0F172A"
                       style={{ padding: "8px 18px", fontSize: 12 }}
                     >
@@ -994,7 +886,17 @@ export default function MaestroWorkbench() {
                     ].map((r) => (
                       <div
                         key={r.title}
-                        onClick={() => handleStartTask(r.title, r.domain, r.budget)}
+                        onClick={() => {
+                          const newTask: LocalTaskItem = {
+                            id: crypto.randomUUID(),
+                            title: r.title,
+                            domain: r.domain,
+                            status: "running",
+                            budget: r.budget,
+                            created_at: new Date().toISOString(),
+                          };
+                          handleAddTask(newTask);
+                        }}
                         style={{
                           padding: "12px 14px",
                           borderRadius: 14,
@@ -1027,23 +929,62 @@ export default function MaestroWorkbench() {
           </div>
         )}
 
-        {/* ── TOOLS & AI CHAT TAB ── */}
+        {/* ── 2. TASKS TAB ── */}
+        {navTab === "tasks" && (
+          <DedicatedTasksPanel
+            tasks={tasks}
+            selectedTask={selectedTask}
+            onSelectTask={setSelectedTask}
+            onAddTaskClick={() => setShowAddTask(true)}
+            currentTask={currentTask}
+            events={events}
+            onOpenACPBankModal={(title, amount) => setAcpModalState({ isOpen: true, title, amount })}
+            onSelectEvent={setSelectedEvent}
+            selectedEventId={selectedEvent?.event_id}
+          />
+        )}
+
+        {/* ── 3. CHAT ASSISTANT TAB ── */}
+        {navTab === "chat" && (
+          <div style={{ padding: "28px 36px", maxWidth: 960, margin: "0 auto" }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
+              💬 Maestro AI Chat Assistant
+            </h2>
+            <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 24px" }}>
+              Ask general questions, check current date/time, request coding advice, or give Maestro tasks to execute.
+            </p>
+            <GeneralChatBot
+              onStartTask={(desc, dom, bdg) => {
+                const newTask: LocalTaskItem = {
+                  id: crypto.randomUUID(),
+                  title: desc,
+                  domain: dom,
+                  status: "running",
+                  budget: bdg,
+                  created_at: new Date().toISOString(),
+                };
+                handleAddTask(newTask);
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── 4. TOOLS TAB ── */}
         {navTab === "tools" && (
           <div style={{ padding: "28px 36px" }}>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", margin: "0 0 6px" }}>
-              🛠️ Maestro Tools & General AI Chat
+              🛠️ Maestro Tools
             </h2>
             <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 28px" }}>
-              Click any tool to launch a saved agentic task window instantly, or ask General AI any question below!
+              Click any tool card below to launch a new autonomous task instantly in your Tasks tab!
             </p>
 
             {/* Tool Bento Cards */}
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 20,
-                marginBottom: 36,
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: 24,
               }}
             >
               {[
@@ -1087,7 +1028,7 @@ export default function MaestroWorkbench() {
                   style={{
                     background: "#FFFFFF",
                     borderRadius: 20,
-                    padding: 24,
+                    padding: 26,
                     border: "1.5px solid #E2E8F0",
                     boxShadow: "0 8px 24px rgba(0,0,0,0.04)",
                     cursor: "pointer",
@@ -1109,28 +1050,25 @@ export default function MaestroWorkbench() {
                   <p style={{ fontSize: 13, color: "#64748B", margin: 0, lineHeight: 1.5 }}>{tool.desc}</p>
                   <div
                     style={{
-                      marginTop: 16,
+                      marginTop: 18,
                       display: "inline-block",
-                      padding: "4px 12px",
+                      padding: "6px 14px",
                       borderRadius: 20,
                       background: `${tool.color}18`,
                       color: tool.color,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: 800,
                     }}
                   >
-                    Click to Launch →
+                    Click to Launch Task →
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* General AI Chatbot */}
-            <GeneralChatBot onStartTask={(desc, dom, bdg) => handleStartTask(desc, dom, bdg)} />
           </div>
         )}
 
-        {/* ── CONFIG TAB ── */}
+        {/* ── 5. CONFIG TAB ── */}
         {navTab === "config" && (
           <div
             style={{
@@ -1151,16 +1089,6 @@ export default function MaestroWorkbench() {
           </div>
         )}
       </div>
-
-      {/* Floating Task Window Modal */}
-      <TaskWindowModal
-        isOpen={showTaskWindow}
-        onClose={() => setShowTaskWindow(false)}
-        tasks={tasks}
-        selectedTaskId={selectedTaskId}
-        onSelectTask={(t) => setSelectedTaskId(t.id)}
-        onAddTaskClick={() => { setShowTaskWindow(false); setShowAddTask(true); }}
-      />
 
       {/* Add Task Modal */}
       <AddTaskModal
