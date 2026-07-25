@@ -20,11 +20,15 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("planner")
 
+import auth
+
 app = FastAPI(
     title="Agentic Assistant — Planner",
     version="0.1.0",
     description="Planner/executor state machine + LLM tool-calling service.",
 )
+
+app.include_router(auth.router)
 
 app.add_middleware(
     CORSMiddleware,
